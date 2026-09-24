@@ -180,6 +180,13 @@
   transform: scale(1.08);
 }
 
+.wishlist.is-favorite {
+  background: #ef795a;
+  border-color: #ef795a;
+  color: #ffffff;
+  box-shadow: 0 10px 20px rgba(239, 121, 90, 0.28);
+}
+
 
 /* =========================================================
    IMAGE LABEL
@@ -260,6 +267,7 @@
 
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
 
   overflow: hidden;
@@ -335,6 +343,7 @@
   display: -webkit-box;
 
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
 
   overflow: hidden;
@@ -433,6 +442,41 @@
   margin-top: auto;
 }
 
+.quantity-control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid #e8dbd3;
+  background: #fffaf7;
+  overflow: hidden;
+}
+
+.qty-button {
+  width: 42px;
+  height: 42px;
+  border: none;
+  background: transparent;
+  color: #2d241f;
+  font-size: 24px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.qty-button:hover {
+  background: #f8ece5;
+}
+
+.qty-value {
+  min-width: 42px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 800;
+  color: #171414;
+}
+
 
 /* ADD TO CART */
 
@@ -474,41 +518,6 @@
 
 .add-button:active {
   transform: translateY(0);
-}
-
-
-/* ADDED */
-
-.add-button.added {
-  background: #3f8135;
-}
-
-
-/* REMOVE */
-
-.remove-button {
-  flex: 0 0 auto;
-
-  padding: 12px 13px;
-
-  border-radius: 9px;
-
-  background: #ffffff;
-
-  border: 1px solid #e6ddd7;
-
-  color: #6b625d;
-
-  font-size: 11px;
-
-  font-weight: 700;
-
-  cursor: pointer;
-}
-
-.remove-button:hover {
-  border-color: #ef795a;
-  color: #ef795a;
 }
 
 

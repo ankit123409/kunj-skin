@@ -1,0 +1,28 @@
+.ads-carousel {
+  width: 100vw;
+  max-width: 100vw;
+  margin: 12px 0 18px;
+  margin-left: calc(50% - 50vw);
+  background: linear-gradient(180deg, #f9f4f1 0%, #f6ece8 100%);
+  border-bottom: 1px solid rgba(117, 88, 76, 0.12);
+}
+
+.ads-carousel__inner {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.ads-banner-image {
+  display: block;
+  width: 100%;
+  height: clamp(220px, 26vw, 420px);
+  object-fit: cover;
+  object-position: center;
+}
+
+@media (max-width: 768px) {
+  .ads-banner-image {
+    height: clamp(180px, 40vw, 260px);
+  }
+}

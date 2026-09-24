@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import './VideoSection.css'
 
 const videos = [
@@ -20,99 +20,190 @@ const videos = [
     src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
     thumb: '/assets/p3.jpg',
   },
+  {
+    id: 'v4',
+    title: 'Glow Naturally With Dot & Key',
+    src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+    thumb: '/assets/p1.png',
+  },
 ]
 
 export default function VideoSection() {
-  const [open, setOpen] = useState<string | null>(null)
+  const [openIndex, setOpenIndex] = useState<number | null>(null)
 
-  const selectedVideo = videos.find((video) => video.id === open)
+  const selectedVideo =
+    openIndex !== null ? videos[openIndex] : null
+
+  const previousVideo = () => {
+    if (openIndex === null) return
+
+    setOpenIndex(
+      openIndex === 0
+        ? videos.length - 1
+        : openIndex - 1
+    )
+  }
+
+  const nextVideo = () => {
+    if (openIndex === null) return
+
+    setOpenIndex(
+      openIndex === videos.length - 1
+        ? 0
+        : openIndex + 1
+    )
+  }
 
   return (
     <section className="video-section">
 
+      {/* HEADER */}
+
       <div className="video-header">
+
         <div>
           <span className="video-label">
-            KUNJ SKIN
+            DOT & KEY
           </span>
 
-          <h3>Videos</h3>
+          <h3>Watch & Discover</h3>
 
           <p>
-            Short clips and product stories
+            Discover our products through quick videos
           </p>
         </div>
+
+        <div className="video-scroll-hint">
+          Swipe →
+        </div>
+
       </div>
 
 
-      <div className="video-row">
+      {/* CAROUSEL */}
 
-        {videos.map((video) => (
+      <div className="video-carousel">
 
-          <article
-            key={video.id}
-            className="video-tile"
-          >
+        <div className="video-row">
 
-            <div
-              className="thumb"
-              onClick={() => setOpen(video.id)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  setOpen(video.id)
-                }
-              }}
+          {videos.map((video, index) => (
+
+            <article
+              key={video.id}
+              className="video-tile"
+              onClick={() => setOpenIndex(index)}
             >
 
-              <img
-                src={video.thumb}
-                alt={video.title}
-              />
+              <div className="video-thumb">
 
-              <div className="thumb-overlay" />
+                <img
+                  src={video.thumb}
+                  alt={video.title}
+                />
 
-              <div className="play">
-                ▶
+                <div className="video-gradient" />
+
+                {/* PLAY */}
+
+                <button
+                  className="play-button"
+                  aria-label={`Play ${video.title}`}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setOpenIndex(index)
+                  }}
+                >
+                  <span>▶</span>
+                </button>
+
+
+                {/* VIDEO LABEL */}
+
+                <div className="video-card-label">
+                  Dot & Key
+                </div>
+
               </div>
 
-            </div>
 
-            <div className="v-title">
-              {video.title}
-            </div>
+              {/* TITLE */}
 
-          </article>
+              <div className="video-card-content">
 
+                <h4>
+                  {video.title}
+                </h4>
+
+                <span className="watch-video">
+                  Watch video →
+                </span>
+
+              </div>
+
+            </article>
+
+          ))}
+
+        </div>
+
+      </div>
+
+
+      {/* DOTS */}
+
+      <div className="video-dots">
+
+        {videos.map((video, index) => (
+          <span
+            key={video.id}
+            className={`video-dot ${
+              index === 0 ? 'active' : ''
+            }`}
+          />
         ))}
 
       </div>
 
 
-      {/* VIDEO MODAL */}
+      {/* MODAL */}
 
       {selectedVideo && (
 
         <div
           className="video-modal"
-          onClick={() => setOpen(null)}
+          onClick={() => setOpenIndex(null)}
         >
 
+          <button
+            className="modal-close"
+            onClick={() => setOpenIndex(null)}
+          >
+            ✕
+          </button>
+
+
+          {/* PREVIOUS */}
+
+          <button
+            className="modal-arrow modal-prev"
+            onClick={(e) => {
+              e.stopPropagation()
+              previousVideo()
+            }}
+          >
+            ‹
+          </button>
+
+
+          {/* VIDEO */}
+
           <div
-            className="video-wrapper"
+            className="video-modal-content"
             onClick={(e) => e.stopPropagation()}
           >
 
-            <button
-              className="close"
-              onClick={() => setOpen(null)}
-              aria-label="Close video"
-            >
-              ✕
-            </button>
-
             <video
+              key={selectedVideo.id}
               controls
               autoPlay
               playsInline
@@ -120,6 +211,19 @@ export default function VideoSection() {
             />
 
           </div>
+
+
+          {/* NEXT */}
+
+          <button
+            className="modal-arrow modal-next"
+            onClick={(e) => {
+              e.stopPropagation()
+              nextVideo()
+            }}
+          >
+            ›
+          </button>
 
         </div>
 

@@ -1,9 +1,8 @@
-import React from 'react'
 import './ProductDetail.css'
 import { products } from '../data/products'
 import type { Product } from '../store/cartSlice'
 import { useAppDispatch, useAppSelector } from '../hooks'
-import { addToCart } from '../store/cartSlice'
+import { addToCart, decrement } from '../store/cartSlice'
 import { openCart } from '../store/uiSlice'
 import { navigate } from '../router'
 
@@ -14,9 +13,11 @@ export default function ProductDetail({ id }: { id: string }) {
 
   const dispatch = useAppDispatch()
 
-  const inCart = useAppSelector((state) =>
-    state.cart.items.some((item) => item.id === product?.id)
+  const quantity = useAppSelector(
+    (state) => state.cart.items.find((item) => item.id === product?.id)?.quantity ?? 0
   )
+
+  const inCart = quantity > 0
 
   if (!product) {
     return (
@@ -90,7 +91,7 @@ export default function ProductDetail({ id }: { id: string }) {
               </div>
 
               <div className="image-brand">
-                Kunj Skin
+                kunj & skin
               </div>
 
             </div>
@@ -138,7 +139,7 @@ export default function ProductDetail({ id }: { id: string }) {
             {/* Brand */}
 
             <div className="detail-category">
-              KUNJ SKIN • SKINCARE
+                SKINCARE
             </div>
 
 
@@ -377,22 +378,41 @@ export default function ProductDetail({ id }: { id: string }) {
 
             <div className="detail-action">
 
-              <button
-                className={`add-detail-button ${
-                  inCart ? 'added' : ''
-                }`}
-                onClick={() => {
-                  if (!inCart) {
+              {!inCart ? (
+                <button
+                  className="add-detail-button"
+                  onClick={() => {
                     dispatch(addToCart(product))
-                  }
+                    dispatch(openCart())
+                  }}
+                >
+                  ADD TO CART
+                </button>
+              ) : (
+                <div className="detail-quantity-control" aria-label="Quantity selector">
+                  <button
+                    className="detail-qty-button"
+                    type="button"
+                    onClick={() => dispatch(decrement(product.id))}
+                    aria-label={`Decrease quantity for ${product.title}`}
+                  >
+                    −
+                  </button>
 
-                  dispatch(openCart())
-                }}
-              >
-                {inCart
-                  ? '✓ ADDED TO CART'
-                  : 'ADD TO CART'}
-              </button>
+                  <span className="detail-qty-value">{quantity}</span>
+
+                  <button
+                    className="detail-qty-button"
+                    type="button"
+                    onClick={() => {
+                      dispatch(addToCart(product))
+                    }}
+                    aria-label={`Increase quantity for ${product.title}`}
+                  >
+                    +
+                  </button>
+                </div>
+              )}
 
             </div>
 
@@ -427,7 +447,7 @@ export default function ProductDetail({ id }: { id: string }) {
             <span>✓</span>
             <div>
               <strong>Quality Assured</strong>
-              <small>Authentic Kunj Skin products</small>
+              <small>Authentic kunj & skin products</small>
             </div>
           </div>
 

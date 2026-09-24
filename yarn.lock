@@ -1366,6 +1366,7 @@ __metadata:
     react: ^19.2.8
     react-dom: ^19.2.8
     react-redux: ^9.3.0
+    react-snap-carousel: ^0.5.1
     typescript: ~6.0.2
     typescript-eslint: ^8.69.0
     vite: ^8.3.0
@@ -1734,6 +1735,15 @@ __metadata:
     redux:
       optional: true
   checksum: a75ce713c91af32cf8e0ba16e176f0445459b9d62d9347e8855a37eb5f82b4aa6a45218d81e9a3f1182343ab397b51cbadd52a0aeb306c8fee8fbddcb8053613
+  languageName: node
+  linkType: hard
+
+"react-snap-carousel@npm:^0.5.1":
+  version: 0.5.1
+  resolution: "react-snap-carousel@npm:0.5.1"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: ed10b65c05373bebcab10bdeafb4fc33bf959521a069944492c454a2401e4aec976602c2ca32c5fcfd8e25527b26e92ed37a35fe3c4fabc5b708720ea9030eb4
   languageName: node
   linkType: hard
 

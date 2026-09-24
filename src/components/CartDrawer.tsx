@@ -1,13 +1,15 @@
-import React, { useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import './CartDrawer.css'
 import { useAppDispatch, useAppSelector } from '../hooks'
-import { decrement, removeFromCart, addToCart } from '../store/cartSlice'
-import { closeCart, openCart } from '../store/uiSlice'
+import { decrement, removeFromCart, addToCart, clearCart } from '../store/cartSlice'
+import { closeCart, openCart, openProfile } from '../store/uiSlice'
+import { placeOrder } from '../store/ordersSlice'
 
 export default function CartDrawer(){
   const dispatch = useAppDispatch()
   const open = useAppSelector(s => s.ui.cartOpen)
   const items = useAppSelector(s => s.cart.items)
+  const isLoggedIn = useAppSelector(s => s.auth.isLoggedIn)
   const pushedRef = useRef(false)
   const overlayRef = useRef<HTMLDivElement | null>(null)
   const drawerRef = useRef<HTMLElement | null>(null)
@@ -115,37 +117,43 @@ export default function CartDrawer(){
       <aside className={"cart-drawer open"} ref={drawerRef} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
         <div className="cart-topbar">
           <div className="topbar-left">
-            <div className="shopping-title">Shopping Cart</div>
+            <div className="shopping-title">Your Cart ({items.length})</div>
           </div>
-          <div className="topbar-right">
-            <div className="savings">Total Savings: ₹{Math.max(0, Math.round(total * 0.2))}</div>
-            <button className="close" onClick={() => { if (pushedRef.current) window.history.back(); else dispatch(closeCart()) }}>✕</button>
-          </div>
+          <button className="close" onClick={() => { if (pushedRef.current) window.history.back(); else dispatch(closeCart()) }}>✕</button>
+        </div>
+
+        <div className="promo-strip">
+          <span className="promo-badge">🎁</span>
+          <span>Yay! You got 2 free gifts + FLAT 20% OFF!</span>
         </div>
 
         <div className="cart-body">
-          <h4 className="section-title">Product Summary</h4>
-
           <ul className="cart-items">
             {items.map(item => (
-              <li key={item.id} className="product-card">
-                <img src={item.img || '/assets/p1.png'} alt={item.title} />
-                <div className="product-info">
-                  <div className="title">{item.title}</div>
-                  <div className="sub">pack of 4 tubes</div>
-                  <div className="badge-green">15% OFF</div>
-                  <div className="price-row">
-                    <div className="price-now">₹{item.price * item.quantity}</div>
-                    <div className="price-old">₹{Math.round(item.price * 1.2)}</div>
-                  </div>
+              <li key={item.id} className="cart-product">
+                <div className="cart-product-image-wrap">
+                  <img src={item.img || '/assets/p1.png'} alt={item.title} />
                 </div>
-                <div className="product-actions">
-                  <div className="qty">
-                    <button onClick={() => dispatch(decrement(item.id))}>−</button>
-                    <div className="count">{item.quantity}</div>
-                    <button onClick={() => dispatch(addToCart(item))}>+</button>
+
+                <div className="cart-product-info">
+                  <div className="cart-title">{item.title}</div>
+                  <div className="cart-meta">{item.size || '30ml'}</div>
+
+                  <div className="cart-price-row">
+                    <div className="cart-price">₹{item.price * item.quantity}</div>
+                    <div className="cart-old-price">₹{Math.round(item.price * 1.2)}</div>
                   </div>
-                  <button className="trash" onClick={() => dispatch(removeFromCart(item.id))}>🗑</button>
+
+                  <div className="cart-save">Flat 20% off</div>
+                </div>
+
+                <div className="cart-product-actions">
+                  <div className="cart-qty">
+                    <button type="button" onClick={() => dispatch(decrement(item.id))}>−</button>
+                    <span>{item.quantity}</span>
+                    <button type="button" onClick={() => dispatch(addToCart(item))}>+</button>
+                  </div>
+                  <button className="cart-trash" type="button" onClick={() => dispatch(removeFromCart(item.id))}>🗑</button>
                 </div>
               </li>
             ))}
@@ -165,11 +173,38 @@ export default function CartDrawer(){
 
         <footer className="cart-footer">
           <div className="footer-left">
-            <div className="total">Total ₹{total}</div>
+            <div className="total-label">Total</div>
+            <div className="total">₹{total}</div>
           </div>
           <div className="footer-right">
             <div className="shipping">Free Shipping</div>
-            <button className="checkout">Checkout</button>
+            <button
+              className="checkout"
+              onClick={() => {
+                if (!isLoggedIn) {
+                  dispatch(closeCart())
+                  dispatch(openProfile())
+                  return
+                }
+
+                if (items.length === 0) return
+
+                const order = {
+                  id: `ORD-${Date.now()}`,
+                  total,
+                  createdAt: new Date().toISOString(),
+                  status: 'Placed' as const,
+                  items: items.map((item) => ({ ...item })),
+                }
+
+                dispatch(placeOrder(order))
+                dispatch(clearCart())
+                dispatch(closeCart())
+                dispatch(openProfile())
+              }}
+            >
+              Checkout Now
+            </button>
           </div>
         </footer>
       </aside>
