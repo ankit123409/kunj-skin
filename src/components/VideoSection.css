@@ -1,0 +1,640 @@
+/* =====================================================
+   KUNJ SKIN VIDEO CAROUSEL
+   ===================================================== */
+
+.video-section {
+  width: 100%;
+
+  max-width: 1400px;
+
+  margin: 0 auto;
+
+  padding: 45px 30px 55px;
+}
+
+
+/* =====================================================
+   HEADER
+   ===================================================== */
+
+.video-header {
+  display: flex;
+
+  align-items: flex-end;
+
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin-bottom: 22px;
+}
+
+.video-label {
+  display: block;
+
+  color: #ef795a;
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+  letter-spacing: 1.8px;
+
+  margin-bottom: 7px;
+}
+
+.video-header h3 {
+  margin: 0;
+
+  color: #171414;
+
+  font-size: 30px;
+
+  font-weight: 800;
+
+  letter-spacing: -0.5px;
+}
+
+.video-header p {
+  margin: 7px 0 0;
+
+  color: #77716d;
+
+  font-size: 13px;
+}
+
+.video-scroll-hint {
+  color: #ef795a;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+
+/* =====================================================
+   CAROUSEL
+   ===================================================== */
+
+.video-carousel {
+  width: 100%;
+
+  overflow: hidden;
+}
+
+.video-row {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 18px;
+
+  width: 100%;
+}
+
+
+/* =====================================================
+   CARD
+   ===================================================== */
+
+.video-tile {
+  min-width: 0;
+
+  border-radius: 16px;
+
+  overflow: hidden;
+
+  background: #ffffff;
+
+  border: 1px solid #eee3dc;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.video-tile:hover {
+  transform: translateY(-5px);
+
+  border-color: #efc9bb;
+
+  box-shadow:
+    0 14px 35px rgba(45, 25, 15, 0.10);
+}
+
+
+/* =====================================================
+   THUMBNAIL
+   ===================================================== */
+
+.video-thumb {
+  position: relative;
+
+  width: 100%;
+
+  aspect-ratio: 9 / 14;
+
+  overflow: hidden;
+
+  background: #f8eee7;
+}
+
+.video-thumb img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  transition:
+    transform 0.4s ease;
+}
+
+.video-tile:hover .video-thumb img {
+  transform: scale(1.04);
+}
+
+
+/* =====================================================
+   GRADIENT
+   ===================================================== */
+
+.video-gradient {
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.02) 35%,
+      rgba(0, 0, 0, 0.55) 100%
+    );
+}
+
+
+/* =====================================================
+   PLAY BUTTON
+   ===================================================== */
+
+.play-button {
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  transform: translate(-50%, -50%);
+
+  width: 62px;
+  height: 62px;
+
+  border-radius: 50%;
+
+  border: 1px solid rgba(255, 255, 255, 0.65);
+
+  background: rgba(239, 121, 90, 0.94);
+
+  color: #ffffff;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.18);
+
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease;
+}
+
+.play-button span {
+  font-size: 20px;
+
+  margin-left: 3px;
+}
+
+.video-tile:hover .play-button {
+  transform:
+    translate(-50%, -50%)
+    scale(1.1);
+
+  background: #ef795a;
+}
+
+
+/* =====================================================
+   CARD LABEL
+   ===================================================== */
+
+.video-card-label {
+  position: absolute;
+
+  left: 12px;
+  top: 12px;
+
+  padding: 6px 9px;
+
+  border-radius: 20px;
+
+  background: rgba(255, 255, 255, 0.92);
+
+  color: #3e3936;
+
+  font-size: 9px;
+
+  font-weight: 800;
+
+  letter-spacing: 0.6px;
+}
+
+
+/* =====================================================
+   CONTENT
+   ===================================================== */
+
+.video-card-content {
+  padding: 13px 14px 15px;
+}
+
+.video-card-content h4 {
+  margin: 0;
+
+  color: #24201e;
+
+  font-size: 14px;
+
+  line-height: 1.4;
+
+  font-weight: 700;
+
+  display: -webkit-box;
+
+  -webkit-line-clamp: 2;
+
+  -webkit-box-orient: vertical;
+
+  overflow: hidden;
+}
+
+.watch-video {
+  display: block;
+
+  margin-top: 8px;
+
+  color: #ef795a;
+
+  font-size: 10px;
+
+  font-weight: 800;
+}
+
+
+/* =====================================================
+   DOTS
+   ===================================================== */
+
+.video-dots {
+  display: none;
+
+  justify-content: center;
+
+  gap: 5px;
+
+  margin-top: 15px;
+}
+
+.video-dot {
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+
+  background: #ddd2cb;
+}
+
+.video-dot.active {
+  width: 20px;
+
+  border-radius: 10px;
+
+  background: #ef795a;
+}
+
+
+/* =====================================================
+   MODAL
+   ===================================================== */
+
+.video-modal {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 9999;
+
+  background:
+    rgba(20, 15, 12, 0.90);
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 30px;
+}
+
+
+/* =====================================================
+   VIDEO
+   ===================================================== */
+
+.video-modal-content {
+  position: relative;
+
+  height: min(90vh, 800px);
+
+  aspect-ratio: 9 / 16;
+
+  max-width: 90vw;
+
+  overflow: hidden;
+
+  border-radius: 14px;
+
+  background: #000;
+
+  box-shadow:
+    0 25px 70px rgba(0, 0, 0, 0.45);
+}
+
+.video-modal-content video {
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  object-fit: contain;
+
+  background: #000;
+}
+
+
+/* =====================================================
+   CLOSE
+   ===================================================== */
+
+.modal-close {
+  position: fixed;
+
+  top: 25px;
+  right: 28px;
+
+  width: 42px;
+  height: 42px;
+
+  border-radius: 50%;
+
+  border: 1px solid rgba(255, 255, 255, 0.25);
+
+  background: rgba(255, 255, 255, 0.12);
+
+  color: #ffffff;
+
+  font-size: 19px;
+
+  cursor: pointer;
+
+  z-index: 10;
+}
+
+.modal-close:hover {
+  background: #ef795a;
+}
+
+
+/* =====================================================
+   MODAL ARROWS
+   ===================================================== */
+
+.modal-arrow {
+  position: fixed;
+
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  width: 48px;
+  height: 48px;
+
+  border-radius: 50%;
+
+  border: 1px solid rgba(255, 255, 255, 0.25);
+
+  background: rgba(255, 255, 255, 0.12);
+
+  color: white;
+
+  font-size: 38px;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  z-index: 10;
+}
+
+.modal-arrow:hover {
+  background: #ef795a;
+}
+
+.modal-prev {
+  left: 30px;
+}
+
+.modal-next {
+  right: 30px;
+}
+
+
+/* =====================================================
+   TABLET
+   ===================================================== */
+
+@media (max-width: 1024px) {
+
+  .video-section {
+    padding:
+      35px
+      20px
+      45px;
+  }
+
+  .video-row {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+
+    gap: 14px;
+  }
+
+  .video-header h3 {
+    font-size: 26px;
+  }
+}
+
+
+/* =====================================================
+   MOBILE / SWIPE CAROUSEL
+   ===================================================== */
+
+@media (max-width: 700px) {
+
+  .video-section {
+    padding:
+      30px
+      0
+      40px;
+  }
+
+  .video-header {
+    padding:
+      0 15px;
+
+    margin-bottom: 17px;
+
+    align-items: flex-end;
+  }
+
+  .video-header h3 {
+    font-size: 23px;
+  }
+
+  .video-header p {
+    font-size: 11px;
+  }
+
+  .video-scroll-hint {
+    font-size: 10px;
+  }
+
+
+  /* IMPORTANT:
+     horizontal swipe
+  */
+
+  .video-carousel {
+    overflow-x: auto;
+
+    overflow-y: hidden;
+
+    scroll-snap-type: x mandatory;
+
+    -webkit-overflow-scrolling: touch;
+
+    scrollbar-width: none;
+
+    padding-left: 15px;
+
+    padding-right: 15px;
+  }
+
+  .video-carousel::-webkit-scrollbar {
+    display: none;
+  }
+
+  .video-row {
+    display: flex;
+
+    gap: 12px;
+
+    width: max-content;
+  }
+
+  .video-tile {
+    width: 190px;
+
+    flex: 0 0 190px;
+
+    scroll-snap-align: start;
+
+    border-radius: 14px;
+  }
+
+  .video-thumb {
+    aspect-ratio: 9 / 14;
+  }
+
+  .play-button {
+    width: 52px;
+    height: 52px;
+  }
+
+  .play-button span {
+    font-size: 17px;
+  }
+
+  .video-card-content {
+    padding: 11px;
+  }
+
+  .video-card-content h4 {
+    font-size: 12px;
+  }
+
+  .watch-video {
+    font-size: 9px;
+  }
+
+  .video-dots {
+    display: flex;
+  }
+}
+
+
+/* =====================================================
+   SMALL PHONE
+   ===================================================== */
+
+@media (max-width: 400px) {
+
+  .video-tile {
+    width: 170px;
+
+    flex-basis: 170px;
+  }
+
+  .video-header h3 {
+    font-size: 21px;
+  }
+
+  .video-scroll-hint {
+    font-size: 9px;
+  }
+
+  .video-section {
+    padding-top: 25px;
+  }
+}
+
+
+/* =====================================================
+   VERY SMALL PHONE
+   ===================================================== */
+
+@media (max-width: 340px) {
+
+  .video-tile {
+    width: 155px;
+
+    flex-basis: 155px;
+  }
+}

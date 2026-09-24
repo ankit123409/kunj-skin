@@ -1,0 +1,117 @@
+:root {
+  --navbar-height: 68px;
+}
+
+.site-navbar {
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  z-index: 60;
+}
+
+.site-navbar .container {
+  max-width: 1126px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 20px;
+  box-sizing: border-box;
+}
+
+.site-navbar .left .logo {
+  font-family: var(--heading);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: 1px;
+  color: var(--text-h);
+}
+.site-navbar .left .amp{
+  margin: 0 6px;
+  font-weight: 700;
+}
+
+.site-navbar .center {
+  flex: 1 1 0;
+  display: flex;
+  justify-content: center;
+}
+
+.site-navbar .search {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--code-bg);
+  border-radius: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+}
+
+.site-navbar .search input {
+  flex: 1 1 auto;
+  border: none;
+  background: transparent;
+  padding: 8px 6px;
+  font-size: 15px;
+  color: var(--text-h);
+  outline: none;
+}
+
+.search-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text);
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon-btn{
+  border: none;
+  background: transparent;
+  padding: 8px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+}
+
+.icon-btn:hover{ background: rgba(0,0,0,0.03); }
+
+.badge-dot{
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  background: var(--text-h);
+  color: white;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+
+.icon-btn.badge{ position: relative; }
+
+@media (max-width: 900px) {
+  .site-navbar .container { padding: 10px 14px }
+  .site-navbar .search { max-width: 420px }
+}
+
+@media (max-width: 600px) {
+  .site-navbar .container { flex-wrap: wrap; align-items: center }
+  .site-navbar .left { order: 1 }
+  .site-navbar .right { order: 2 }
+  .site-navbar .center { order: 3; width: 100%; margin-top: 8px }
+  .site-navbar .search { width: 100%; max-width: none }
+  .site-navbar .left .logo { font-size: 18px }
+}

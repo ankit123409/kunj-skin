@@ -1,0 +1,30 @@
+.site-footer{
+  background: #0b5a3f; /* deep green */
+  color: #eaf6ee;
+}
+.site-footer .container{
+  max-width:1200px;
+  margin:0 auto;
+  padding:48px 40px;
+}
+.cols{ display:flex; gap:36px; align-items:flex-start; }
+.col{ flex:1 }
+.brand{ font-family:var(--heading); font-weight:800; font-size:28px; color:#f6fff8 }
+.desc{ margin-top:12px; color:rgba(234,246,238,0.9); font-size:15px; max-width:320px }
+.address{ margin-top:12px; color:rgba(234,246,238,0.9); font-size:14px; max-width:420px }
+.signup{ margin-top:18px }
+.signup-title{ color:rgba(234,246,238,0.95); margin-bottom:12px; font-size:18px }
+.signup-btn{ background:#6bd98b; color:#04361f; border:none; padding:12px 22px; border-radius:8px; font-weight:800 }
+.heading{ font-weight:700; margin-bottom:12px; color:#f6fff8 }
+.col ul{ list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px }
+.col a{ color:rgba(234,246,238,0.9); text-decoration:none }
+.col a:hover{ text-decoration:underline }
+.bottom{ display:flex; justify-content:space-between; align-items:center; margin-top:28px; font-size:14px; color:rgba(234,246,238,0.8) }
+
+@media (max-width: 900px){
+  .site-footer .container{ padding:28px 20px }
+  .cols{ flex-direction:column; gap:18px }
+  .brand{ font-size:22px }
+  .bottom{ flex-direction:column; gap:8px; text-align:center }
+}
+
