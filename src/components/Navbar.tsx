@@ -18,7 +18,7 @@ export default function Navbar({
     <header className="site-navbar">
       <div className="container">
         <div className="left">
-          <div className="logo">Kunj<span className="amp">&</span>Skin</div>
+          <div className="logo" onClick={() => navigate('/')}>Kunj<span className="amp">&</span>Skin</div>
         </div>
 
         <div className="right">
