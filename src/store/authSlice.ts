@@ -1,11 +1,18 @@
 import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 
+const resetStoredOrders = () => {
+  if (typeof window !== 'undefined') {
+    window.localStorage.removeItem('kunj-skin-orders')
+  }
+}
+
 type AuthState = {
   isLoggedIn: boolean
   mobile: string
   otpSent: boolean
   otpCode: string
+  deliveryAddress: string
 }
 
 const initialState: AuthState = {
@@ -13,6 +20,7 @@ const initialState: AuthState = {
   mobile: '',
   otpSent: false,
   otpCode: '',
+  deliveryAddress: '',
 }
 
 const authSlice = createSlice({
@@ -35,9 +43,14 @@ const authSlice = createSlice({
       state.mobile = ''
       state.otpSent = false
       state.otpCode = ''
+      state.deliveryAddress = ''
+      resetStoredOrders()
+    },
+    setDeliveryAddress(state, action: PayloadAction<string>) {
+      state.deliveryAddress = action.payload
     },
   },
 })
 
-export const { sendOtp, verifyOtp, logout } = authSlice.actions
+export const { sendOtp, verifyOtp, logout, setDeliveryAddress } = authSlice.actions
 export default authSlice.reducer

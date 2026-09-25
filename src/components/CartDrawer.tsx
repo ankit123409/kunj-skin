@@ -1,15 +1,13 @@
 import { useEffect, useRef } from 'react'
 import './CartDrawer.css'
 import { useAppDispatch, useAppSelector } from '../hooks'
-import { decrement, removeFromCart, addToCart, clearCart } from '../store/cartSlice'
-import { closeCart, openCart, openProfile } from '../store/uiSlice'
-import { placeOrder } from '../store/ordersSlice'
+import { decrement, removeFromCart, addToCart } from '../store/cartSlice'
+import { closeCart, openCart, openProfile, startCheckout } from '../store/uiSlice'
 
 export default function CartDrawer(){
   const dispatch = useAppDispatch()
   const open = useAppSelector(s => s.ui.cartOpen)
   const items = useAppSelector(s => s.cart.items)
-  const isLoggedIn = useAppSelector(s => s.auth.isLoggedIn)
   const pushedRef = useRef(false)
   const overlayRef = useRef<HTMLDivElement | null>(null)
   const drawerRef = useRef<HTMLElement | null>(null)
@@ -122,10 +120,10 @@ export default function CartDrawer(){
           <button className="close" onClick={() => { if (pushedRef.current) window.history.back(); else dispatch(closeCart()) }}>✕</button>
         </div>
 
-        <div className="promo-strip">
+        {/* <div className="promo-strip">
           <span className="promo-badge">🎁</span>
           <span>Yay! You got 2 free gifts + FLAT 20% OFF!</span>
-        </div>
+        </div> */}
 
         <div className="cart-body">
           <ul className="cart-items">
@@ -144,7 +142,7 @@ export default function CartDrawer(){
                     <div className="cart-old-price">₹{Math.round(item.price * 1.2)}</div>
                   </div>
 
-                  <div className="cart-save">Flat 20% off</div>
+                  {/* <div className="cart-save">Flat 20% off</div> */}
                 </div>
 
                 <div className="cart-product-actions">
@@ -159,7 +157,7 @@ export default function CartDrawer(){
             ))}
           </ul>
 
-          <div className="freebie-box">
+          {/* <div className="freebie-box">
             <div className="free-left">
               <img src="/assets/p1.png" alt="freebie" />
             </div>
@@ -168,7 +166,7 @@ export default function CartDrawer(){
               <div className="free-sub">FREE <span className="free-old">₹1,000</span></div>
             </div>
             <div className="free-qty">QTY: 1</div>
-          </div>
+          </div> */}
         </div>
 
         <footer className="cart-footer">
@@ -181,24 +179,9 @@ export default function CartDrawer(){
             <button
               className="checkout"
               onClick={() => {
-                if (!isLoggedIn) {
-                  dispatch(closeCart())
-                  dispatch(openProfile())
-                  return
-                }
-
                 if (items.length === 0) return
 
-                const order = {
-                  id: `ORD-${Date.now()}`,
-                  total,
-                  createdAt: new Date().toISOString(),
-                  status: 'Placed' as const,
-                  items: items.map((item) => ({ ...item })),
-                }
-
-                dispatch(placeOrder(order))
-                dispatch(clearCart())
+                dispatch(startCheckout())
                 dispatch(closeCart())
                 dispatch(openProfile())
               }}

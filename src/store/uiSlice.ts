@@ -3,11 +3,13 @@ import { createSlice } from '@reduxjs/toolkit'
 type UIState = {
   cartOpen: boolean
   profileOpen: boolean
+  checkoutFlow: boolean
 }
 
 const initialState: UIState = {
   cartOpen: false,
   profileOpen: false,
+  checkoutFlow: false,
 }
 
 const uiSlice = createSlice({
@@ -32,8 +34,23 @@ const uiSlice = createSlice({
     toggleProfile(state) {
       state.profileOpen = !state.profileOpen
     },
+    startCheckout(state) {
+      state.checkoutFlow = true
+    },
+    finishCheckout(state) {
+      state.checkoutFlow = false
+    },
   },
 })
 
-export const { openCart, closeCart, toggleCart, openProfile, closeProfile, toggleProfile } = uiSlice.actions
+export const {
+  openCart,
+  closeCart,
+  toggleCart,
+  openProfile,
+  closeProfile,
+  toggleProfile,
+  startCheckout,
+  finishCheckout,
+} = uiSlice.actions
 export default uiSlice.reducer

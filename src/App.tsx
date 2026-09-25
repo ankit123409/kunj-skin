@@ -5,6 +5,7 @@ import ProductList from './components/ProductList'
 import CartDrawer from './components/CartDrawer'
 import Footer from './components/Footer'
 import ProductDetail from './components/ProductDetail'
+import OrderDetail from './components/OrderDetail'
 import FavoritesPage from './components/FavoritesPage'
 import ProfileModal from './components/ProfileModal'
 import { usePath } from './router'
@@ -20,6 +21,9 @@ export default function App() {
   } else if (path.startsWith('/product/')) {
     const id = path.split('/product/')[1]
     if (id) content = <ProductDetail id={id} />
+  } else if (path.startsWith('/order/')) {
+    const id = path.split('/order/')[1]
+    if (id) content = <OrderDetail id={id} />
   } else {
     content = (
       <>
