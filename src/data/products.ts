@@ -1,53 +1,32 @@
 import type { Product } from '../store/cartSlice'
-
+import p1 from '../assets/p1.png'
+import product2 from '../assets/product2.png'
+import product3 from '../assets/product3.png'
 export const products: Product[] = [
   {
     id: 'p1',
-    title: 'Vitamin C + E Gel Face Wash for Glowing Skin',
-    price: 375,
-    size: '175ml',
-    img: '/assets/p1.png',
+    title: 'Glowkunj Face serum for lightening  & glowing skin',
+    price: 799,
+    size: '30ml',
+    img: p1,
+    desc:"Advanced skincare formula for healthy, radiant skin"
   },
   {
     id: 'p2',
-    title: 'Barrier Repair Gentle Hydrating Face Wash',
-    price: 375,
-    size: '175ml',
-    img: '/assets/p2.png',
+    title: 'Vitakunj Face serum for even tone skin',
+    price: 799,
+    size: '30ml',
+    img: product2,
+    desc:"Gentle yet effective face wash for sensitive skin"
   },
   {
     id: 'p3',
-    title: 'Cica + Salicylic Acid Face Wash for Oily Skin',
-    price: 375,
-    size: '175ml',
-    img: '/assets/p3.jpg',
-  },
-  {
-    id: 'p4',
-    title: 'Salikunj Face Wash for Acne Prone Skin',
+    title: 'Salikunj Face wash ',
     price: 199,
     size: '70ml',
-    img: '/assets/kunj-glow.png',
+    img: product3,
+    desc:"Effective face wash for oily skin"
   },
-    {
-    id: 'p4',
-    title: 'Salikunj Face Wash for Acne Prone Skin',
-    price: 199,
-    size: '70ml',
-    img: '/assets/kunj-glow.png',
-  },
-    {
-    id: 'p4',
-    title: 'Salikunj Face Wash for Acne Prone Skin',
-    price: 199,
-    size: '70ml',
-    img: '/assets/kunj-glow.png',
-  },
-    {
-    id: 'p4',
-    title: 'Salikunj Face Wash for Acne Prone Skin',
-    price: 199,
-    size: '70ml',
-    img: '/assets/kunj-glow.png',
-  },
+ 
+   
 ]

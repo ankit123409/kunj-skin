@@ -49,7 +49,7 @@ export default function ProductCard({ product }: { product: Product }) {
         {/* Product image */}
         <div className="product-image-wrap">
           <img
-            src={myImage}
+            src={product.img}
             alt={product.title}
             className="product-image"
           />

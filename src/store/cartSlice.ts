@@ -7,6 +7,7 @@ export type Product = {
   price: number
   size?: string
   img?: string
+  desc?: string
 }
 
 type CartItem = Product & { quantity: number }
