@@ -14,18 +14,28 @@ function loadFromStorage<T>(key: string): T | undefined {
   }
 }
 
+const reducer = {
+  cart: cartReducer,
+  ui: uiReducer,
+  favorites: favoritesReducer,
+  auth: authReducer,
+  orders: ordersReducer,
+}
+
+export type RootState = {
+  cart: ReturnType<typeof cartReducer>
+  ui: ReturnType<typeof uiReducer>
+  favorites: ReturnType<typeof favoritesReducer>
+  auth: AuthState
+  orders: OrdersState
+}
+
 export const store = configureStore({
-  reducer: {
-    cart: cartReducer,
-    ui: uiReducer,
-    favorites: favoritesReducer,
-    auth: authReducer,
-    orders: ordersReducer,
-  },
+  reducer,
   preloadedState: {
     auth: loadFromStorage<AuthState>('kunj-skin-auth') ?? initialAuthState,
     orders: loadFromStorage<OrdersState>('kunj-skin-orders') ?? initialOrdersState,
-  },
+  } satisfies Partial<RootState>,
 })
 
 store.subscribe(() => {
@@ -33,5 +43,4 @@ store.subscribe(() => {
   localStorage.setItem('kunj-skin-orders', JSON.stringify(store.getState().orders))
 })
 
-export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch

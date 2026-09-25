@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import './CartDrawer.css'
+import fallbackImage from '../assets/p1.png'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { decrement, removeFromCart, addToCart } from '../store/cartSlice'
 import { closeCart, openCart, openProfile, startCheckout } from '../store/uiSlice'
@@ -130,7 +131,7 @@ export default function CartDrawer(){
             {items.map(item => (
               <li key={item.id} className="cart-product">
                 <div className="cart-product-image-wrap">
-                  <img src={item.img || '/assets/p1.png'} alt={item.title} />
+                  <img src={item.img || fallbackImage} alt={item.title} />
                 </div>
 
                 <div className="cart-product-info">
@@ -159,7 +160,7 @@ export default function CartDrawer(){
 
           {/* <div className="freebie-box">
             <div className="free-left">
-              <img src="/assets/p1.png" alt="freebie" />
+              <img src={fallbackImage} alt="freebie" />
             </div>
             <div className="free-right">
               <div className="free-title">Personalised Diet plan</div>

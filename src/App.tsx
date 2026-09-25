@@ -7,6 +7,7 @@ import Footer from './components/Footer'
 import ProductDetail from './components/ProductDetail'
 import OrderDetail from './components/OrderDetail'
 import FavoritesPage from './components/FavoritesPage'
+import OrdersPage from './components/OrdersPage'
 import ProfileModal from './components/ProfileModal'
 import { usePath } from './router'
 import AdBannerCarousel from './components/AdBannerCarousel'
@@ -18,6 +19,8 @@ export default function App() {
   let content: React.ReactNode = null
   if (path === '/favorites') {
     content = <FavoritesPage />
+  } else if (path === '/orders') {
+    content = <OrdersPage />
   } else if (path.startsWith('/product/')) {
     const id = path.split('/product/')[1]
     if (id) content = <ProductDetail id={id} />

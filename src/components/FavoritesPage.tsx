@@ -1,4 +1,5 @@
 import './FavoritesPage.css'
+import fallbackImage from '../assets/p1.png'
 import { products } from '../data/products'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { addToCart } from '../store/cartSlice'
@@ -41,7 +42,7 @@ export default function FavoritesPage() {
         {likedProducts.map((product) => (
           <article key={product.id} className="favorites-card">
             <div className="favorites-media" onClick={() => navigate(`/product/${product.id}`)}>
-              <img src={product.img || '/assets/p1.png'} alt={product.title} />
+              <img src={product.img || fallbackImage} alt={product.title} />
               <span className="favorites-tag">kunj & skin</span>
             </div>
 

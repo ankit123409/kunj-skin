@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react'
 
 export function navigate(to: string) {
-  if (window.location.pathname !== to) {
-    window.history.pushState(null, '', to)
+  const base = import.meta.env.BASE_URL.replace(/\/$/, '')
+  const normalized = to.startsWith('/') ? to : `/${to}`
+  const target = `${base}${normalized}`
+
+  if (window.location.pathname !== target) {
+    window.history.pushState(null, '', target)
     window.dispatchEvent(new PopStateEvent('popstate'))
   }
 }

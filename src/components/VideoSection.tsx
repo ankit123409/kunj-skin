@@ -1,30 +1,33 @@
 import { useState } from 'react'
 import './VideoSection.css'
+import heroImage from '../assets/banner1.png'
+import bannerImage from '../assets/banner2.png'
+import productHero from '../assets/product2.png'
 
 const videos = [
   {
     id: 'v1',
     title: 'All About ACV CQR Plus Effervescent',
     src: 'https://www.w3schools.com/html/mov_bbb.mp4',
-    thumb: '/assets/p1.png',
+    thumb: heroImage,
   },
   {
     id: 'v2',
     title: 'Why Soha Chooses Super Strength',
     src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-    thumb: '/assets/p2.jpg',
+    thumb: bannerImage,
   },
   {
     id: 'v3',
     title: "Shehnaaz Gill's hack to boost metabolism",
     src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
-    thumb: '/assets/p3.jpg',
+    thumb: productHero,
   },
   {
     id: 'v4',
     title: 'Glow Naturally With Dot & Key',
     src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-    thumb: '/assets/p1.png',
+    thumb: heroImage,
   },
 ]
 

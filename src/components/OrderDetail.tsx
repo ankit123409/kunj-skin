@@ -1,4 +1,5 @@
 import './OrderDetail.css'
+import fallbackImage from '../assets/p1.png'
 import { useAppSelector } from '../hooks'
 import { navigate } from '../router'
 
@@ -78,7 +79,7 @@ export default function OrderDetail({ id }: { id: string }) {
               {order.items.map((item) => (
                 <div key={`${order.id}-${item.id}`} className="order-product-row">
                   <img
-                    src={item.img || '/assets/p1.png'}
+                    src={item.img || fallbackImage}
                     alt={item.title}
                     className="order-product-image"
                   />

@@ -1,4 +1,5 @@
 import './ProductDetail.css'
+import fallbackImage from '../assets/p1.png'
 import { products } from '../data/products'
 import type { Product } from '../store/cartSlice'
 import { useAppDispatch, useAppSelector } from '../hooks'
@@ -83,7 +84,7 @@ export default function ProductDetail({ id }: { id: string }) {
               <div className="detail-image-wrapper">
 
                 <img
-                  src={product.img || '/assets/p1.png'}
+                  src={product.img || fallbackImage}
                   alt={product.title}
                   className="detail-product-image"
                 />

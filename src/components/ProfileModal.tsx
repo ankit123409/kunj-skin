@@ -49,10 +49,12 @@ export default function ProfileModal() {
     const timeout = window.setTimeout(() => {
       setShowSuccess(false)
       setTab('orders')
-    }, 1800)
+      dispatch(closeProfile())
+      navigate('/orders')
+    }, 1600)
 
     return () => window.clearTimeout(timeout)
-  }, [showSuccess])
+  }, [showSuccess, dispatch])
 
   const orderSummary = useMemo(
     () =>
