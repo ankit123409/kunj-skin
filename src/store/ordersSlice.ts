@@ -12,11 +12,11 @@ type OrderItem = {
   items: CartLine[]
 }
 
-type OrdersState = {
+export type OrdersState = {
   items: OrderItem[]
 }
 
-const initialState: OrdersState = {
+export const initialState: OrdersState = {
   items: [],
 }
 

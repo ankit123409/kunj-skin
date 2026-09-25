@@ -2,8 +2,8 @@ import { configureStore } from '@reduxjs/toolkit'
 import cartReducer from './cartSlice'
 import uiReducer from './uiSlice'
 import favoritesReducer from './favoritesSlice'
-import authReducer from './authSlice'
-import ordersReducer from './ordersSlice'
+import authReducer, { initialState as initialAuthState, type AuthState } from './authSlice'
+import ordersReducer, { initialState as initialOrdersState, type OrdersState } from './ordersSlice'
 
 function loadFromStorage<T>(key: string): T | undefined {
   try {
@@ -23,8 +23,8 @@ export const store = configureStore({
     orders: ordersReducer,
   },
   preloadedState: {
-    auth: loadFromStorage('kunj-skin-auth') ?? undefined,
-    orders: loadFromStorage('kunj-skin-orders') ?? undefined,
+    auth: loadFromStorage<AuthState>('kunj-skin-auth') ?? initialAuthState,
+    orders: loadFromStorage<OrdersState>('kunj-skin-orders') ?? initialOrdersState,
   },
 })
 

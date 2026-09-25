@@ -6,7 +6,6 @@ import { toggleFavorite } from '../store/favoritesSlice'
 import { openCart } from '../store/uiSlice'
 import { navigate } from '../router'
 
-import myImage from '../assets/p1.png'
 
 export default function ProductCard({ product }: { product: Product }) {
   const dispatch = useAppDispatch()

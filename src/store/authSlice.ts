@@ -7,7 +7,7 @@ const resetStoredOrders = () => {
   }
 }
 
-type AuthState = {
+export type AuthState = {
   isLoggedIn: boolean
   mobile: string
   otpSent: boolean
@@ -15,7 +15,7 @@ type AuthState = {
   deliveryAddress: string
 }
 
-const initialState: AuthState = {
+export const initialState: AuthState = {
   isLoggedIn: false,
   mobile: '',
   otpSent: false,

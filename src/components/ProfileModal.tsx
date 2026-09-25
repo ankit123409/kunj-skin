@@ -17,13 +17,11 @@ export default function ProfileModal() {
   const orders = useAppSelector((s) => s.orders.items)
   const cartItems = useAppSelector((s) => s.cart.items)
   const checkoutFlow = useAppSelector((s) => s.ui.checkoutFlow)
-  const deliveryAddress = useAppSelector((s) => s.auth.deliveryAddress)
 
   const [phone, setPhone] = useState(mobile)
   const [otp, setOtp] = useState('')
   const [error, setError] = useState('')
   const [showSuccess, setShowSuccess] = useState(false)
-  const [address, setAddress] = useState(deliveryAddress)
   const [checkoutForm, setCheckoutForm] = useState({
     pincode: '',
     address: '',
@@ -34,10 +32,6 @@ export default function ProfileModal() {
     agree: true,
   })
   const [tab, setTab] = useState<'orders' | 'account' | 'checkout'>('orders')
-
-  useEffect(() => {
-    setAddress(deliveryAddress)
-  }, [deliveryAddress])
 
   useEffect(() => {
     setCheckoutForm((prev) => ({ ...prev, phone: mobile || prev.phone }))
