@@ -1,6 +1,5 @@
 import './FavoritesPage.css'
 import fallbackImage from '../assets/p1.png'
-import { products } from '../data/products'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { addToCart } from '../store/cartSlice'
 import { openCart } from '../store/uiSlice'
@@ -9,7 +8,11 @@ import { navigate } from '../router'
 export default function FavoritesPage() {
   const dispatch = useAppDispatch()
   const favoriteIds = useAppSelector((state) => state.favorites.items)
-  const likedProducts = products.filter((product) => favoriteIds.includes(product.id))
+  const products = useAppSelector((state) => state.products.items)
+console.log("likedProducts1",products);
+
+  const likedProducts = products.filter((product) => favoriteIds.includes(product?._id))
+console.log("likedProducts",favoriteIds);
 
   if (likedProducts.length === 0) {
     return (
@@ -40,15 +43,15 @@ export default function FavoritesPage() {
 
       <div className="favorites-grid">
         {likedProducts.map((product) => (
-          <article key={product.id} className="favorites-card">
-            <div className="favorites-media" onClick={() => navigate(`/product/${product.id}`)}>
-              <img src={product.img || fallbackImage} alt={product.title} />
+          <article key={product._id} className="favorites-card">
+              <div className="favorites-media" onClick={() => navigate(`/product/${product._id}`)}>
+              <img src={product.image || product.img || fallbackImage} alt={product.title} />
               <span className="favorites-tag">kunj & skin</span>
             </div>
 
             <div className="favorites-content">
               <div className="favorites-category">SKINCARE</div>
-              <h3 onClick={() => navigate(`/product/${product.id}`)}>{product.title}</h3>
+              <h3 onClick={() => navigate(`/product/${product._id}`)}>{product.title}</h3>
 
               <div className="favorites-meta">
                 <span>★ 4.8</span>
@@ -73,7 +76,7 @@ export default function FavoritesPage() {
                 </button>
                 <button
                   className="favorites-secondary"
-                  onClick={() => navigate(`/product/${product.id}`)}
+                  onClick={() => navigate(`/product/${product._id}`)}
                 >
                   Details
                 </button>

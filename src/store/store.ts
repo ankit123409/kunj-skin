@@ -4,6 +4,7 @@ import uiReducer from './uiSlice'
 import favoritesReducer from './favoritesSlice'
 import authReducer, { initialState as initialAuthState, type AuthState } from './authSlice'
 import ordersReducer, { initialState as initialOrdersState, type OrdersState } from './ordersSlice'
+import productsReducer from './productsSlice'
 
 function loadFromStorage<T>(key: string): T | undefined {
   try {
@@ -20,6 +21,7 @@ const reducer = {
   favorites: favoritesReducer,
   auth: authReducer,
   orders: ordersReducer,
+  products: productsReducer,
 }
 
 export type RootState = {
@@ -28,6 +30,7 @@ export type RootState = {
   favorites: ReturnType<typeof favoritesReducer>
   auth: AuthState
   orders: OrdersState
+  products: ReturnType<typeof productsReducer>
 }
 
 export const store = configureStore({

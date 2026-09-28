@@ -130,6 +130,28 @@
   padding: 18px 20px 22px;
 }
 
+.auth-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.auth-toggle button {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #eadfd8;
+  background: #fff;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.auth-toggle button.active {
+  background: #ef795a;
+  color: #fff;
+  border-color: #ef795a;
+}
+
 .field-label {
   display: block;
   margin-bottom: 8px;

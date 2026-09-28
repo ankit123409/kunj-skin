@@ -1,6 +1,5 @@
 import './ProductDetail.css'
 import fallbackImage from '../assets/p1.png'
-import { products } from '../data/products'
 import type { Product } from '../store/cartSlice'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { addToCart, decrement } from '../store/cartSlice'
@@ -8,9 +7,8 @@ import { openCart } from '../store/uiSlice'
 import { navigate } from '../router'
 
 export default function ProductDetail({ id }: { id: string }) {
-  const product: Product | undefined = products.find(
-    (p) => p.id === id
-  )
+  console.log("id",id);
+  const product: Product | undefined = useAppSelector((s) => s.products.items.find((p) => p._id === id))
 
   const dispatch = useAppDispatch()
 
@@ -84,7 +82,7 @@ export default function ProductDetail({ id }: { id: string }) {
               <div className="detail-image-wrapper">
 
                 <img
-                  src={product.img || fallbackImage}
+                  src={product.image || product.img || fallbackImage}
                   alt={product.title}
                   className="detail-product-image"
                 />
@@ -161,9 +159,15 @@ export default function ProductDetail({ id }: { id: string }) {
             {/* Description */}
 
             <p className="detail-description">
-              Advanced skincare formula designed to help
-              maintain healthy, smooth and naturally radiant skin.
+              {product.description || 'Advanced skincare formula designed to help maintain healthy, smooth and naturally radiant skin.'}
             </p>
+
+            {product.createdAt && (
+              <div className="meta-row">
+                <small>Added: {new Date(product.createdAt).toLocaleString()}</small>
+                {product.updatedAt && <small style={{ marginLeft: 12 }}>Updated: {new Date(product.updatedAt).toLocaleString()}</small>}
+              </div>
+            )}
 
 
             {/* Rating */}
@@ -394,7 +398,7 @@ export default function ProductDetail({ id }: { id: string }) {
                   <button
                     className="detail-qty-button"
                     type="button"
-                    onClick={() => dispatch(decrement(product.id))}
+                    onClick={() => dispatch(decrement(product._id))}
                     aria-label={`Decrease quantity for ${product.title}`}
                   >
                     −

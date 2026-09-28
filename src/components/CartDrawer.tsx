@@ -131,7 +131,7 @@ export default function CartDrawer(){
             {items.map(item => (
               <li key={item.id} className="cart-product">
                 <div className="cart-product-image-wrap">
-                  <img src={item.img || fallbackImage} alt={item.title} />
+                  <img src={item.image || item.img || fallbackImage} alt={item.title} />
                 </div>
 
                 <div className="cart-product-info">

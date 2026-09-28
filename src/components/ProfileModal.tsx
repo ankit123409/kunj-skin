@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import './ProfileModal.css'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { closeProfile, finishCheckout } from '../store/uiSlice'
-import { logout, sendOtp, setDeliveryAddress, verifyOtp } from '../store/authSlice'
+import { logout, register as registerUser, setDeliveryAddress, setAuthenticated } from '../store/authSlice'
+import { registerApi, loginApi } from '../api/api'
 import { clearCart } from '../store/cartSlice'
 import { placeOrder } from '../store/ordersSlice'
 import { navigate } from '../router'
@@ -12,15 +13,22 @@ export default function ProfileModal() {
   const isOpen = useAppSelector((s) => s.ui.profileOpen)
   const isLoggedIn = useAppSelector((s) => s.auth.isLoggedIn)
   const mobile = useAppSelector((s) => s.auth.mobile)
-  const otpSent = useAppSelector((s) => s.auth.otpSent)
-  const otpCode = useAppSelector((s) => s.auth.otpCode)
+  const loginError = useAppSelector((s) => s.auth.loginError)
   const orders = useAppSelector((s) => s.orders.items)
   const cartItems = useAppSelector((s) => s.cart.items)
   const checkoutFlow = useAppSelector((s) => s.ui.checkoutFlow)
 
   const [phone, setPhone] = useState(mobile)
-  const [otp, setOtp] = useState('')
+  const [authMode, setAuthMode] = useState<'register' | 'login'>('register')
+  const [regName, setRegName] = useState('')
+  const [regMobile, setRegMobile] = useState('')
+  const [regPassword, setRegPassword] = useState('')
+  const [loginMobile, setLoginMobile] = useState('')
+  const [loginPassword, setLoginPassword] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [authSuccess, setAuthSuccess] = useState(false)
+  const [authMessage, setAuthMessage] = useState('')
   const [showSuccess, setShowSuccess] = useState(false)
   const [checkoutForm, setCheckoutForm] = useState({
     pincode: '',
@@ -67,31 +75,99 @@ export default function ProfileModal() {
 
   if (!isOpen) return null
 
-  const handleSendOtp = () => {
-    const cleanPhone = phone.replace(/\D/g, '')
-    if (!/^\d{10}$/.test(cleanPhone)) {
-      setError('Enter a valid 10-digit mobile number')
+  const handleRegister = () => {
+    const name = regName.trim()
+    const mobileVal = regMobile.replace(/\D/g, '')
+    const password = regPassword
+
+    if (!name || !/^\d{10}$/.test(mobileVal) || password.length < 4) {
+      setError('Enter valid name, 10-digit mobile and password (min 4 chars)')
       return
     }
 
     setError('')
-    dispatch(sendOtp(cleanPhone))
+    setLoading(true)
+    registerApi({ name, mobile: mobileVal, password })
+      .then((res) => {
+        console.log("rseses",res);
+        
+        // server response expected: { success: true, message, token, user }
+        const msg = res?.message || 'Registration successful'
+        const token = res?.token
+        const user = res?.user
+
+        if (token && typeof window !== 'undefined') {
+          window.localStorage.setItem('kunj-skin-token', token)
+        }
+        if (user && typeof window !== 'undefined') {
+          window.localStorage.setItem('kunj-skin-user', JSON.stringify(user))
+        }
+
+        // update local store and UI
+        dispatch(registerUser({ name, mobile: mobileVal, password }))
+        dispatch(setAuthenticated({ mobile: mobileVal }))
+
+        // show toast then close modal
+        setAuthMessage(msg)
+        setAuthSuccess(true)
+        setError('')
+
+        window.setTimeout(() => {
+          setAuthSuccess(false)
+          dispatch(closeProfile())
+        }, 1200)
+      })
+      .catch((err) => {
+        console.log("errrr",err);
+        
+        setError(err?.response?.data?.message || 'Registration failed')
+      })
+      .finally(() => setLoading(false))
   }
 
-  const handleVerifyOtp = () => {
-    if (!otp.trim()) {
-      setError('Enter the OTP')
+  const handleLogin = () => {
+    const mobileVal = loginMobile.replace(/\D/g, '')
+    const password = loginPassword
+
+    if (!/^\d{10}$/.test(mobileVal) || !password) {
+      setError('Enter mobile and password')
       return
     }
 
-    dispatch(verifyOtp(otp.trim()))
     setError('')
+    setLoading(true)
+    loginApi({ mobile: mobileVal, password })
+      .then((res) => {
+        const msg = res?.message || 'Login successful'
+        const token = res?.token
+        const user = res?.user
+
+        if (token && typeof window !== 'undefined') {
+          window.localStorage.setItem('kunj-skin-token', token)
+        }
+        if (user && typeof window !== 'undefined') {
+          window.localStorage.setItem('kunj-skin-user', JSON.stringify(user))
+        }
+
+        dispatch(setAuthenticated({ mobile: mobileVal }))
+
+        setAuthMessage(msg)
+        setAuthSuccess(true)
+
+        window.setTimeout(() => {
+          setAuthSuccess(false)
+          dispatch(closeProfile())
+        }, 1200)
+      })
+      .catch((err) => {
+        setError(err?.response?.data?.message || 'Login failed')
+      })
+      .finally(() => setLoading(false))
   }
 
   const handleLogout = () => {
     dispatch(logout())
     setTab('orders')
-    setOtp('')
     setError('')
   }
 
@@ -156,6 +232,13 @@ export default function ProfileModal() {
           </div>
         )}
 
+        {authSuccess && (
+          <div className="order-success-popup">
+            <div className="success-icon">✓</div>
+            <span>{authMessage || 'Success'}</span>
+          </div>
+        )}
+
         {checkoutFlow && isLoggedIn ? (
           <div className="profile-header checkout-header">
             <h3>Add new address</h3>
@@ -173,43 +256,37 @@ export default function ProfileModal() {
 
         {!isLoggedIn ? (
           <div className="login-panel">
-            <label className="field-label">Mobile number</label>
-            <input
-              type="tel"
-              value={phone}
-              maxLength={10}
-              placeholder="Enter 10-digit number"
-              onChange={(e) => setPhone(e.target.value)}
-            />
+            <div className="auth-toggle">
+              <button type="button" className={authMode === 'register' ? 'active' : ''} onClick={() => setAuthMode('register')}>Register</button>
+              <button type="button" className={authMode === 'login' ? 'active' : ''} onClick={() => setAuthMode('login')}>Login</button>
+            </div>
 
-            <button className="primary-button" type="button" onClick={handleSendOtp}>
-              Send OTP
-            </button>
-
-            {otpSent && (
+            {authMode === 'register' ? (
               <>
-                <div className="otp-box">
-                  <span>Demo OTP:</span>
-                  <strong>{otpCode}</strong>
-                </div>
+                <label className="field-label">Name</label>
+                <input type="text" value={regName} placeholder="Full name" onChange={(e) => setRegName(e.target.value)} />
 
-                <label className="field-label">Enter OTP</label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={otp}
-                  maxLength={6}
-                  placeholder="Enter 6-digit OTP"
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                />
+                <label className="field-label">Mobile</label>
+                <input type="tel" value={regMobile} maxLength={10} placeholder="10-digit mobile" onChange={(e) => setRegMobile(e.target.value)} />
 
-                <button className="primary-button" type="button" onClick={handleVerifyOtp}>
-                  Verify & Continue
-                </button>
+                <label className="field-label">Password</label>
+                <input type="password" value={regPassword} placeholder="Password" onChange={(e) => setRegPassword(e.target.value)} />
+
+                <button className="primary-button" type="button" onClick={handleRegister}>Register</button>
+              </>
+            ) : (
+              <>
+                <label className="field-label">Mobile</label>
+                <input type="tel" value={loginMobile} maxLength={10} placeholder="10-digit mobile" onChange={(e) => setLoginMobile(e.target.value)} />
+
+                <label className="field-label">Password</label>
+                <input type="password" value={loginPassword} placeholder="Password" onChange={(e) => setLoginPassword(e.target.value)} />
+
+                <button className="primary-button" type="button" onClick={handleLogin}>Login</button>
               </>
             )}
 
-            {error && <div className="field-error">{error}</div>}
+            {(error || loginError) && <div className="field-error">{error || (loginError ? 'Invalid credentials' : '')}</div>}
           </div>
         ) : checkoutFlow ? (
           <div className="checkout-panel">

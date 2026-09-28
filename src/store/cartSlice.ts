@@ -2,12 +2,15 @@ import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 
 export type Product = {
-  id: string
   title: string
   price: number
   size?: string
+  image?: string
   img?: string
-  desc?: string
+  description?: string
+  createdAt?: string
+  updatedAt?: string
+  _id?: string
 }
 
 type CartItem = Product & { quantity: number }

@@ -1,4 +1,4 @@
-import { products } from '../data/products'
+import { useAppSelector } from '../hooks'
 import CustomerReviews from './CustomerReviews'
 import ProductCard from './ProductCard'
 import './ProductList.css'
@@ -11,6 +11,8 @@ export default function ProductList({
   search?: string
 }) {
   const query = search.trim().toLowerCase()
+
+  const products = useAppSelector((s) => s.products.items)
 
   const filteredProducts = query
     ? products.filter((product) =>
@@ -28,12 +30,12 @@ export default function ProductList({
       )}
 
       <div className="grid">
-        {filteredProducts.map((p) => (
+        {filteredProducts?.map((p) => (
           <ProductCard key={p.id} product={p} />
         ))}
       </div>
 
-      {query && filteredProducts.length === 0 && (
+      {query && filteredProducts?.length === 0 && (
         <div className="no-results">No products found for "{search}"</div>
       )}
 

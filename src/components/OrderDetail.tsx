@@ -79,7 +79,7 @@ export default function OrderDetail({ id }: { id: string }) {
               {order.items.map((item) => (
                 <div key={`${order.id}-${item.id}`} className="order-product-row">
                   <img
-                    src={item.img || fallbackImage}
+                    src={item.image || item.img || fallbackImage}
                     alt={item.title}
                     className="order-product-image"
                   />

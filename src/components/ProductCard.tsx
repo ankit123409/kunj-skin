@@ -9,16 +9,18 @@ import { navigate } from '../router'
 
 export default function ProductCard({ product }: { product: Product }) {
   const dispatch = useAppDispatch()
-
+console.log("product1111",product);
   const quantity = useAppSelector(
-    (state) => state.cart.items.find((item) => item.id === product.id)?.quantity ?? 0
+    (state) => state.cart.items.find((item) => item._id === product._id)?.quantity ?? 0
   )
 
   const inCart = quantity > 0
-  const isFavorite = useAppSelector((state) => state.favorites.items.includes(product.id))
+  const isFavorite = useAppSelector((state) => state.favorites.items.includes(product._id))
 
   const mrp = Math.round(product.price * 1.25)
   const discount = Math.round(((mrp - product.price) / mrp) * 100)
+  // console.log("product",product);
+  
 
   return (
     <article className="product-card">
@@ -26,7 +28,7 @@ export default function ProductCard({ product }: { product: Product }) {
       {/* PRODUCT IMAGE */}
       <div
         className="product-media"
-        onClick={() => navigate(`/product/${product.id}`)}
+        onClick={() => navigate(`/product/${product._id}`)}
       >
         {/* Discount */}
         {/* <span className="discount-badge">
@@ -39,7 +41,7 @@ export default function ProductCard({ product }: { product: Product }) {
           aria-label={isFavorite ? 'Remove from wishlist' : 'Add to wishlist'}
           onClick={(e) => {
             e.stopPropagation()
-            dispatch(toggleFavorite(product.id))
+            dispatch(toggleFavorite(product._id))
           }}
         >
           {isFavorite ? '♥' : '♡'}
@@ -48,15 +50,10 @@ export default function ProductCard({ product }: { product: Product }) {
         {/* Product image */}
         <div className="product-image-wrap">
           <img
-            src={product.img}
+            src={product.image || product.img || '/fallback.png'}
             alt={product.title}
             className="product-image"
           />
-        </div>
-
-        {/* Bottom image label */}
-        <div className="image-tag">
-          kunj & skin
         </div>
       </div>
 
@@ -71,7 +68,7 @@ export default function ProductCard({ product }: { product: Product }) {
         {/* Title */}
         <h3
           className="product-title"
-          onClick={() => navigate(`/product/${product.id}`)}
+          onClick={() => navigate(`/product/${product._id}`)}
         >
           {product.title}
         </h3>
@@ -92,7 +89,10 @@ export default function ProductCard({ product }: { product: Product }) {
 
         {/* Short benefit */}
         <p className="product-benefit">
-          Advanced skincare formula for healthy, radiant skin
+          {
+            product?.description
+          }
+          {/* Advanced skincare formula for healthy, radiant skin */}
         </p>
 
         {/* Size */}
@@ -142,7 +142,7 @@ export default function ProductCard({ product }: { product: Product }) {
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation()
-                  dispatch(decrement(product.id))
+                  dispatch(decrement(product._id))
                 }}
                 aria-label={`Decrease quantity for ${product.title}`}
               >
