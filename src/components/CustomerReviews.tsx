@@ -47,9 +47,25 @@ const reviews = [
   },
 ]
 
-export default function CustomerReviews() {
+export default function CustomerReviews({ variant = 'static' }: { variant?: 'static' | 'input' }) {
+  if (variant === 'input') {
+    return (
+      <section className="customer-reviews customer-reviews--input">
+        <div className="review-input-panel">
+          <label htmlFor="product-review" className="review-input-label">Write a review</label>
+          <input
+            id="product-review"
+            type="text"
+            className="review-input"
+            placeholder="Share your experience with this product..."
+          />
+        </div>
+      </section>
+    )
+  }
+
   return (
-    <section className="customer-reviews">
+    <section className="customer-reviews customer-reviews--static">
       <h2>Love That Keeps Us Going</h2>
 
       <div className="reviews-grid">

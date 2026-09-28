@@ -11,13 +11,35 @@ const instance = axios.create({
 
 export async function registerApi(payload: { name: string; mobile: string; password: string }) {
   const res = await instance.post('/auth/register', payload)
- 
-  
   return res.data
 }
 
 export async function loginApi(payload: { mobile: string; password: string }) {
   const res = await instance.post('/auth/login', payload)
+  return res.data
+}
+
+export async function createOrderApi(payload: { items: { product: string; quantity: number }[]; address: { name: string; mobile: string; addressLine1: string; addressLine2: string; city: string; state: string; pincode: string } }, token?: string) {
+  const res = await instance.post('/orders', payload, {
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  })
+
+  return res.data
+}
+
+export async function getMyOrdersApi(token?: string) {
+  const res = await instance.get('/orders/my', {
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  })
+
+  return res.data
+}
+
+export async function getOrderByIdApi(id: string, token?: string) {
+  const res = await instance.get(`/orders/${id}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  })
+
   return res.data
 }
 

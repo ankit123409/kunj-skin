@@ -1,14 +1,134 @@
+import { useEffect, useMemo, useState } from 'react'
 import './OrderDetail.css'
 import fallbackImage from '../assets/p1.png'
 import { useAppSelector } from '../hooks'
 import { navigate } from '../router'
+import { getOrderByIdApi } from '../api/api'
+import CustomerReviews from './CustomerReviews'
+
+type OrderProduct = {
+  id: string
+  title: string
+  price: number
+  quantity: number
+  image?: string
+  img?: string
+  size?: string
+}
+
+type OrderRecord = {
+  id: string
+  status: string
+  createdAt: string
+  total: number
+  items: OrderProduct[]
+  address?: {
+    name?: string
+    mobile?: string
+    addressLine1?: string
+    addressLine2?: string
+    city?: string
+    state?: string
+    pincode?: string
+  }
+}
 
 export default function OrderDetail({ id }: { id: string }) {
-  const order = useAppSelector((state) =>
-    state.orders.items.find((entry) => entry.id === id)
+  const localOrder = useAppSelector((state) =>
+    state.orders.items.find((entry) => entry.id === id || entry.id === id)
   )
+  const [order, setOrder] = useState<OrderRecord | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  if (!order) {
+  useEffect(() => {
+    const token = typeof window !== 'undefined' ? window.localStorage.getItem('kunj-skin-token') : null
+
+    // const normalizeOrder = (payload: any): OrderRecord | null => {
+    //   if (!payload) return null
+
+    //   const rawItems = Array.isArray(payload.items) ? payload.items : []
+
+    //   return {
+    //     id: payload._id || payload.id || id,
+    //     status: payload.status || 'Placed',
+    //     createdAt: payload.createdAt || payload.created_at || new Date().toISOString(),
+    //     total: Number(payload.total ?? payload.amount ?? 0),
+    //     items: rawItems.map((item: any, index: number) => {
+    //       const product = item.product || item || {}
+    //       const title = product.title || product.name || item.name || `Product ${index + 1}`
+    //       const price = Number(item.price ?? product.price ?? 0)
+    //       const quantity = Number(item.quantity ?? 1)
+
+    //       return {
+    //         id: item._id || item.id || product._id || `${payload._id || payload.id || id}-${index}`,
+    //         title,
+    //         price,
+    //         quantity,
+    //         image: product.image || item.image || item.img || product.img,
+    //         img: product.img || item.img,
+    //         size: product.size || item.size || '30ml',
+    //       }
+    //     }),
+    //     address: payload.address || {
+    //       name: payload.name,
+    //       mobile: payload.mobile,
+    //       addressLine1: payload.addressLine1,
+    //       addressLine2: payload.addressLine2,
+    //       city: payload.city,
+    //       state: payload.state,
+    //       pincode: payload.pincode,
+    //     },
+    //   }
+    // }
+
+    const loadOrder = async () => {
+      if (token) {
+       
+           const response = await getOrderByIdApi(id, token)
+            console.log("payload111",response);
+            setOrder(response.data)
+        // setLoading(true)
+      
+        return
+      }
+
+      // if (!localOrder) {
+      //   setOrder(null)
+      //   return
+      // }
+
+      // setOrder({
+      //   id: localOrder.id,
+      //   status: localOrder.status,
+      //   createdAt: localOrder.createdAt,
+      //   total: Number(localOrder.total ?? 0),
+      //   items: localOrder.items.map((item) => ({
+      //     id: item.id,
+      //     title: item.title,
+      //     price: Number(item.price ?? 0),
+      //     quantity: Number(item.quantity ?? 1),
+      //     image: item.image || item.img,
+      //     img: item.img,
+      //     size: item.size || '30ml',
+      //   })),
+      //   address: {
+      //     name: '',
+      //     mobile: '',
+      //     addressLine1: '',
+      //     city: '',
+      //     state: '',
+      //     pincode: '',
+      //   },
+      // })
+    }
+
+    loadOrder()
+  }, [id, localOrder])
+
+  const orderData = order || localOrder
+
+  if (!orderData && !loading) {
     return (
       <main className="order-detail-page">
         <div className="detail-container">
@@ -25,14 +145,17 @@ export default function OrderDetail({ id }: { id: string }) {
       </main>
     )
   }
+console.log("orderData?.items ",orderData?.items );
 
-  const subtotal = order.items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  )
-  const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0)
-  const shipping = subtotal > 799 ? 0 : 49
-  const total = order.total ?? subtotal + shipping
+  const items = orderData?.items ?? []
+  // const subtotal = useMemo(
+  //   () => items.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 1), 0),
+  //   [items]
+  // )
+  const itemCount = items.reduce((sum, item) => sum + Number(item.quantity || 1), 0)
+  // const shipping = subtotal > 799 ? 0 : 49
+  const total = orderData?.totalAmount || 0
+  const address = orderData?.address || {}
 
   return (
     <main className="order-detail-page">
@@ -42,79 +165,92 @@ export default function OrderDetail({ id }: { id: string }) {
           Back to Products
         </button>
 
-        <div className="detail-grid order-detail-grid">
-          <div className="detail-image-section">
-            <div className="detail-image-card order-hero-card">
-              <span className="detail-discount">{order.status}</span>
-
-              <div className="order-hero-content">
-                <div className="order-kicker">Order Details</div>
-                <h1>{order.id}</h1>
-                <p>
-                  Placed on {new Date(order.createdAt).toLocaleDateString('en-GB', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                  })}
-                </p>
-                <div className="order-summary-stat">
-                  <span>{itemCount} items</span>
-                  <strong>₹{total}</strong>
+        {loading ? (
+          <div className="order-loader">Loading order details...</div>
+        ) : (
+          <>
+            <div className="detail-grid order-detail-grid order-detail-single">
+              <div className="detail-info detail-info--full">
+                <div className="detail-header-row">
+                  <div className="detail-category">Order Summary</div>
+                  <div className="detail-badge">{orderData?.status || 'PREPARING'}</div>
                 </div>
-              </div>
-            </div>
-          </div>
 
-          <div className="detail-info">
-            <div className="detail-category">Order Summary</div>
-            <div className="detail-badge">PREPARING</div>
-
-            <h2 className="detail-title">Your order is on the way</h2>
-
-            <p className="detail-description">
-              Thanks for shopping with kunj & skin. Your skincare essentials are being prepared for delivery.
-            </p>
-
-            <div className="order-items-panel">
-              {order.items.map((item) => (
-                <div key={`${order.id}-${item.id}`} className="order-product-row">
-                  <img
-                    src={item.image || item.img || fallbackImage}
-                    alt={item.title}
-                    className="order-product-image"
-                  />
-
-                  <div className="order-product-meta">
-                    <strong>{item.title}</strong>
-                    <span>{item.size || '30ml'}</span>
-                    <small>Qty: {item.quantity}</small>
+                <div className="order-top-meta">
+                  <div className="order-id-wrap">
+                    <div className="order-id-label">Order ID</div>
+                    <div className="order-id-value">{orderData?.id || id}</div>
                   </div>
-
-                  <div className="order-price-box">₹{item.price * item.quantity}</div>
+                  <div className="order-date-wrap">
+                    <div className="order-id-label">Placed on</div>
+                    <div className="order-date-value">
+                      {new Date(orderData?.createdAt || Date.now()).toLocaleDateString('en-GB', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                      })}
+                    </div>
+                  </div>
                 </div>
-              ))}
+
+                <h2 className="detail-title">Your order is on the way</h2>
+
+                <p className="detail-description">
+                  Thanks for shopping with kunj & skin. Your skincare essentials are being prepared for delivery.
+                </p>
+
+                <div className="order-address-card">
+                  <h3>Delivery Address</h3>
+                  <div className="order-address-line">{address.name || 'Customer Name'}</div>
+                  <div className="order-address-line">{address.mobile || 'Mobile unavailable'}</div>
+                  <div className="order-address-line">{address.addressLine1 || 'Address line 1'}</div>
+                  {address.addressLine2 ? <div className="order-address-line">{address.addressLine2}</div> : null}
+                  <div className="order-address-line">
+                    {address.city || 'City'}, {address.state || 'State'} - {address.pincode || '000000'}
+                  </div>
+                </div>
+
+                <div className="order-items-panel">
+                  {items.map((item) => (
+                    <div key={`${orderData?.id || id}-${item.id}`} className="order-product-row">
+                      <img
+                        src={item.image || item.img || fallbackImage}
+                        alt={item.title}
+                        className="order-product-image"
+                      />
+
+                      <div className="order-product-meta">
+                        <strong>{item.title}</strong>
+                        <span>{item.size || '30ml'}</span>
+                        <small>Qty: {item.quantity}</small>
+                      </div>
+
+                      <div className="order-price-box">₹{Number(item.price || 0) * Number(item.quantity || 1)}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="order-summary-box">
+                  <div className="order-summary-row">
+                    <span>{itemCount} items</span>
+                    <strong>₹{total}</strong>
+                  </div>
+                  <div className="order-summary-row">
+                    <span>Discount</span>
+                    <strong>₹0</strong>
+                  </div>
+                  <div className="order-summary-total">
+                    <span>Total</span>
+                    <strong>₹{total}</strong>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div className="order-summary-box">
-              <div className="order-summary-row">
-                <span>Subtotal</span>
-                <strong>₹{subtotal}</strong>
-              </div>
-              <div className="order-summary-row">
-                <span>Shipping</span>
-                <strong>{shipping === 0 ? 'Free' : `₹${shipping}`}</strong>
-              </div>
-              <div className="order-summary-row">
-                <span>Discount</span>
-                <strong>₹0</strong>
-              </div>
-              <div className="order-summary-total">
-                <span>Total</span>
-                <strong>₹{total}</strong>
-              </div>
-            </div>
-          </div>
-        </div>
+            <CustomerReviews variant="input" />
+            {error && <div className="field-error order-error">{error}</div>}
+          </>
+        )}
       </div>
     </main>
   )

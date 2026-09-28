@@ -7,3 +7,7 @@ export const AUTH = {
 export const PRODUCTS = {
   LIST: `${API_BASE}/products`,
 }
+export const ORDERS = {
+  MY: `${API_BASE}/orders/my`,
+  CREATE: `${API_BASE}/orders`,
+}

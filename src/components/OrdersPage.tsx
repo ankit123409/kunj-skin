@@ -1,9 +1,127 @@
+import { useEffect, useState } from 'react'
 import './OrdersPage.css'
 import { useAppSelector } from '../hooks'
+import { getMyOrdersApi } from '../api/api'
 import { navigate } from '../router'
 
+type OrderRow = {
+  id: string
+  totalAmount: number
+  createdAt: string
+  status: string
+  items: Array<{
+    id: string
+    title: string
+    price: number
+    quantity: number
+  }>
+}
+
 export default function OrdersPage() {
-  const orders = useAppSelector((state) => state.orders.items)
+  const localOrders = useAppSelector((state) => state.orders.items)
+  const [orders, setOrders] = useState<OrderRow[]>([])
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const token = typeof window !== 'undefined' ? window.localStorage.getItem('kunj-skin-token') : null
+
+    if (!token) {
+      setOrders(localOrders.map((order) => ({
+        id: order.id,
+        totalAmount: order.totalAmount,
+        createdAt: order.createdAt,
+        status: order.status,
+        items: order.items.map((item) => ({
+          id: item.id,
+          title: item.title,
+          price: item.price,
+          quantity: item.quantity,
+        })),
+      })))
+      return
+    }
+
+    let isMounted = true
+    setLoading(true)
+
+    getMyOrdersApi(token)
+      .then((response) => {
+        console.log("resesqqq",response);
+        setOrders(response.data)
+        
+        // if (!isMounted) return
+
+        // const rawOrders = Array.isArray(response)
+        //   ? response
+        //   : Array.isArray(response?.orders)
+        //     ? response.orders
+        //     : Array.isArray(response?.data)
+        //       ? response.data
+        //       : Array.isArray(response?.result)
+        //         ? response.result
+        //         : []
+
+        // const mapped = rawOrders.map((order: any) => {
+        //   const orderItems = Array.isArray(order.items) ? order.items : []
+
+        //   return {
+        //     id: order._id || order.id || `ORD-${Date.now()}-${Math.random()}`,
+        //     total: Number(order.total ?? order.amount ?? 0),
+        //     createdAt: order.createdAt || order.created_at || new Date().toISOString(),
+        //     status: order.status || 'Placed',
+        //     items: orderItems.map((item: any, index: number) => {
+        //       const product = item.product || {}
+        //       const productName = product.title || product.name || `Product ${index + 1}`
+        //       const unitPrice = Number(item.price ?? product.price ?? 0)
+
+        //       return {
+        //         id: item._id || item.id || `${order._id || order.id || 'order'}-${index}`,
+        //         title: productName,
+        //         price: unitPrice,
+        //         quantity: Number(item.quantity ?? 1),
+        //       }
+        //     }),
+        //   }
+        })
+
+      //   setOrders(mapped)
+      // })
+      // .catch(() => {
+      //   if (!isMounted) return
+      //   setOrders(localOrders.map((order) => ({
+      //     id: order.id,
+      //     total: order.total,
+      //     createdAt: order.createdAt,
+      //     status: order.status,
+      //     items: order.items.map((item) => ({
+      //       id: item.id,
+      //       title: item.title,
+      //       price: item.price,
+      //       quantity: item.quantity,
+      //     })),
+      //   })))
+      // })
+      // .finally(() => {
+      //   if (isMounted) setLoading(false)
+      // })
+
+    return () => {
+      isMounted = false
+    }
+  }, [localOrders])
+
+  const renderOrders = orders.length > 0 ? orders : localOrders.map((order) => ({
+    id: order.id,
+    totalAmount: order.totalAmount,
+    createdAt: order.createdAt,
+    status: order.status,
+    items: order.items.map((item) => ({
+      id: item.id,
+      title: item.title,
+      price: item.price,
+      quantity: item.quantity,
+    })),
+  }))
 
   return (
     <main className="orders-page">
@@ -17,7 +135,12 @@ export default function OrdersPage() {
           <h1>My Orders</h1>
         </div>
 
-        {orders.length === 0 ? (
+        {loading && orders.length === 0 ? (
+          <div className="orders-empty">
+            <div className="empty-icon">📦</div>
+            <h2>Loading orders...</h2>
+          </div>
+        ) : renderOrders.length === 0 ? (
           <div className="orders-empty">
             <div className="empty-icon">📦</div>
             <h2>No orders yet</h2>
@@ -25,15 +148,16 @@ export default function OrdersPage() {
           </div>
         ) : (
           <div className="orders-list">
-            {orders.map((order) => (
+            {orders?.map((order) => (
               <button
                 key={order.id}
                 type="button"
                 className="order-summary-card"
-                onClick={() => navigate(`/order/${order.id}`)}
+                onClick={() => navigate(`/order/${order._id || order.id}`)}
               >
+               
                 <div className="order-summary-top">
-                  <strong>{order.id}</strong>
+                  <strong>{order._id}</strong>
                   <span className="order-status-tag">{order.status}</span>
                 </div>
 
@@ -51,7 +175,7 @@ export default function OrdersPage() {
                   ))}
                 </div>
 
-                <div className="order-summary-total">Order total: ₹{order.total}</div>
+                <div className="order-summary-total">Order total: ₹{order.totalAmount}</div>
               </button>
             ))}
           </div>

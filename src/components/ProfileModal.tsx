@@ -3,7 +3,7 @@ import './ProfileModal.css'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { closeProfile, finishCheckout } from '../store/uiSlice'
 import { logout, register as registerUser, setDeliveryAddress, setAuthenticated } from '../store/authSlice'
-import { registerApi, loginApi } from '../api/api'
+import { registerApi, loginApi, createOrderApi } from '../api/api'
 import { clearCart } from '../store/cartSlice'
 import { placeOrder } from '../store/ordersSlice'
 import { navigate } from '../router'
@@ -30,6 +30,7 @@ export default function ProfileModal() {
   const [authSuccess, setAuthSuccess] = useState(false)
   const [authMessage, setAuthMessage] = useState('')
   const [showSuccess, setShowSuccess] = useState(false)
+  const [orderMessage, setOrderMessage] = useState('Order created successfully')
   const [checkoutForm, setCheckoutForm] = useState({
     pincode: '',
     address: '',
@@ -39,7 +40,7 @@ export default function ProfileModal() {
     saveAs: 'Home',
     agree: true,
   })
-  const [tab, setTab] = useState<'orders' | 'account' | 'checkout'>('orders')
+  const [tab, setTab] = useState<'orders' | 'account' | 'checkout'>('account')
 
   useEffect(() => {
     setCheckoutForm((prev) => ({ ...prev, phone: mobile || prev.phone }))
@@ -177,7 +178,7 @@ export default function ProfileModal() {
     dispatch(finishCheckout())
   }
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     const trimmedAddress = checkoutForm.address.trim()
     const trimmedPincode = checkoutForm.pincode.trim()
     const trimmedName = checkoutForm.fullName.trim()
@@ -194,32 +195,71 @@ export default function ProfileModal() {
       return
     }
 
-    if (cartItems.length === 0) return
-
-    const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-    const order = {
-      id: `ORD-${Date.now()}`,
-      total,
-      createdAt: new Date().toISOString(),
-      status: 'Placed' as const,
-      items: cartItems.map((item) => ({ ...item })),
+    if (cartItems.length === 0) {
+      setError('Your cart is empty')
+      return
     }
 
-    const addressText = [
-      trimmedAddress,
-      `${trimmedPincode}`,
-      `Phone: ${trimmedPhone}`,
-      `Name: ${trimmedName}`,
-      `Email: ${trimmedEmail}`,
-    ].join(', ')
+    const validItems = cartItems
+      .map((item) => {
+        const productId = (item as typeof item & { _id?: string; id?: string })._id ?? (item as typeof item & { _id?: string; id?: string }).id
+        return productId ? { product: productId, quantity: item.quantity } : null
+      })
+      .filter(Boolean) as { product: string; quantity: number }[]
 
-    dispatch(setDeliveryAddress(addressText))
-    dispatch(placeOrder(order))
-    dispatch(clearCart())
-    setShowSuccess(true)
-    setTab('orders')
-    setError('')
-    dispatch(finishCheckout())
+    if (validItems.length === 0) {
+      setError('Unable to place order: product details are missing from your cart.')
+      return
+    }
+
+    const token = typeof window !== 'undefined' ? window.localStorage.getItem('kunj-skin-token') : null
+
+    try {
+      const payload = {
+        items: validItems,
+        address: {
+          name: trimmedName,
+          mobile: trimmedPhone,
+          addressLine1: trimmedAddress,
+          addressLine2: '',
+          city: 'Valsad',
+          state: 'Gujarat',
+          pincode: trimmedPincode,
+        },
+      }
+
+      const response = await createOrderApi(payload, token || undefined)
+      const serverMessage = response?.message || 'Order created successfully'
+      setOrderMessage(serverMessage)
+
+      const total = cartItems.reduce((sum, item) => sum + Number(item.price || 0) * item.quantity, 0)
+      const order = {
+        id: response?.order?._id || `ORD-${Date.now()}`,
+        total,
+        createdAt: new Date().toISOString(),
+        status: 'Placed' as const,
+        items: cartItems.map((item) => ({ ...item })),
+      }
+
+      const addressText = [
+        trimmedAddress,
+        `${trimmedPincode}`,
+        `Phone: ${trimmedPhone}`,
+        `Name: ${trimmedName}`,
+        `Email: ${trimmedEmail}`,
+      ].join(', ')
+
+      dispatch(setDeliveryAddress(addressText))
+      dispatch(placeOrder(order))
+      dispatch(clearCart())
+      setShowSuccess(true)
+      setTab('orders')
+      setError('')
+      dispatch(finishCheckout())
+    } catch (err: any) {
+      const serverErrorMessage = err?.response?.data?.message || err?.response?.data?.error || 'Order creation failed'
+      setError(serverErrorMessage)
+    }
   }
 
   return (
@@ -228,7 +268,7 @@ export default function ProfileModal() {
         {showSuccess && (
           <div className="order-success-popup">
             <div className="success-icon">✓</div>
-            <span>Order success</span>
+            <span>{orderMessage}</span>
           </div>
         )}
 
@@ -374,68 +414,29 @@ export default function ProfileModal() {
             <div className="profile-tabs">
               <button
                 type="button"
-                className={tab === 'orders' ? 'active-tab' : ''}
-                onClick={() => setTab('orders')}
-              >
-                My Orders
-              </button>
-              <button
-                type="button"
                 className={tab === 'account' ? 'active-tab' : ''}
                 onClick={() => setTab('account')}
               >
                 Account
+              </button>
+              <button
+                type="button"
+                className={tab === 'orders' ? 'active-tab' : ''}
+                onClick={() => {
+                  setTab('orders')
+                  dispatch(closeProfile())
+                  dispatch(finishCheckout())
+                  navigate('/orders')
+                }}
+              >
+                My Orders
               </button>
               <button type="button" className="ghost-button" onClick={handleLogout}>
                 Logout
               </button>
             </div>
 
-            {tab === 'orders' ? (
-              <div className="orders-panel">
-                {orderSummary.length === 0 ? (
-                  <div className="empty-order">
-                    <div className="empty-icon">📦</div>
-                    <h4>No orders yet</h4>
-                    <p>Your placed orders will appear here.</p>
-                  </div>
-                ) : (
-                  orderSummary.map((order) => (
-                    <button
-                      key={order.id}
-                      type="button"
-                      className="order-card"
-                      onClick={() => {
-                        dispatch(closeProfile())
-                        dispatch(finishCheckout())
-                        navigate(`/order/${order.id}`)
-                      }}
-                    >
-                      <div className="order-head">
-                        <strong>{order.id}</strong>
-                        <span className="order-status">{order.status}</span>
-                      </div>
-
-                      <div className="order-meta">
-                        <span>{new Date(order.createdAt).toLocaleDateString()}</span>
-                        <span>{order.count} items</span>
-                      </div>
-
-                      <div className="order-items-list">
-                        {order.items.map((item) => (
-                          <div key={`${order.id}-${item.id}`} className="mini-item">
-                            <span>{item.title}</span>
-                            <strong>₹{item.price * item.quantity}</strong>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className="order-total">Order total: ₹{order.total}</div>
-                    </button>
-                  ))
-                )}
-              </div>
-            ) : (
+            {tab === 'account' && (
               <div className="account-panel">
                 <div className="info-row">
                   <span>Mobile</span>

@@ -39,7 +39,7 @@ export default function ProductList({
         <div className="no-results">No products found for "{search}"</div>
       )}
 
-      {!query && <CustomerReviews />}
+      {!query && <CustomerReviews variant="static" />}
     </section>
   )
 }
