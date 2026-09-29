@@ -148,11 +148,11 @@ export default function CartDrawer(){
 
                 <div className="cart-product-actions">
                   <div className="cart-qty">
-                    <button type="button" onClick={() => dispatch(decrement(item._id))}>−</button>
+                    <button type="button" onClick={() => dispatch(decrement(item._id ?? item.id ?? ''))}>−</button>
                     <span>{item.quantity}</span>
                     <button type="button" onClick={() => dispatch(addToCart(item))}>+</button>
                   </div>
-                  <button className="cart-trash" type="button" onClick={() => dispatch(removeFromCart(item.id))}>🗑</button>
+                  <button className="cart-trash" type="button" onClick={() => dispatch(removeFromCart(item._id ?? item.id ?? ''))}>🗑</button>
                 </div>
               </li>
             ))}

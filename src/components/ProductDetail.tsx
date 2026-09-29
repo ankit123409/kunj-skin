@@ -13,7 +13,7 @@ export default function ProductDetail({ id }: { id: string }) {
   const dispatch = useAppDispatch()
 
   const quantity = useAppSelector(
-    (state) => state.cart.items.find((item) => item.id === product?.id)?.quantity ?? 0
+    (state) => state.cart.items.find((item) => item._id === product?._id)?.quantity ?? 0
   )
 
   const inCart = quantity > 0
@@ -398,7 +398,7 @@ export default function ProductDetail({ id }: { id: string }) {
                   <button
                     className="detail-qty-button"
                     type="button"
-                    onClick={() => dispatch(decrement(product._id))}
+                    onClick={() => dispatch(decrement(product._id || product.id || ''))}
                     aria-label={`Decrease quantity for ${product.title}`}
                   >
                     −

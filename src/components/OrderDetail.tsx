@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import './OrderDetail.css'
 import fallbackImage from '../assets/p1.png'
 import { useAppSelector } from '../hooks'
@@ -7,7 +7,8 @@ import { getOrderByIdApi } from '../api/api'
 import CustomerReviews from './CustomerReviews'
 
 type OrderProduct = {
-  id: string
+  id?: string
+  _id?: string
   title: string
   price: number
   quantity: number
@@ -17,10 +18,12 @@ type OrderProduct = {
 }
 
 type OrderRecord = {
-  id: string
-  status: string
-  createdAt: string
-  total: number
+  id?: string
+  _id?: string
+  status?: string
+  createdAt?: string
+  total?: number
+  totalAmount?: number
   items: OrderProduct[]
   address?: {
     name?: string
@@ -35,8 +38,8 @@ type OrderRecord = {
 
 export default function OrderDetail({ id }: { id: string }) {
   const localOrder = useAppSelector((state) =>
-    state.orders.items.find((entry) => entry.id === id || entry.id === id)
-  )
+    state.orders.items.find((entry) => entry.id === id || entry._id === id)
+  ) as OrderRecord | undefined
   const [order, setOrder] = useState<OrderRecord | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -83,14 +86,21 @@ export default function OrderDetail({ id }: { id: string }) {
     // }
 
     const loadOrder = async () => {
-      if (token) {
-       
+      try {
+        setLoading(true)
+        setError('')
+
+        if (token) {
            const response = await getOrderByIdApi(id, token)
             console.log("payload111",response);
-            setOrder(response.data)
-        // setLoading(true)
-      
-        return
+            setOrder(response.data as OrderRecord)
+            return
+        }
+      } catch (err: any) {
+        const message = err?.response?.data?.message || err?.response?.data?.error || 'Unable to load order.'
+        setError(message)
+      } finally {
+        setLoading(false)
       }
 
       // if (!localOrder) {
@@ -154,8 +164,8 @@ console.log("orderData?.items ",orderData?.items );
   // )
   const itemCount = items.reduce((sum, item) => sum + Number(item.quantity || 1), 0)
   // const shipping = subtotal > 799 ? 0 : 49
-  const total = orderData?.totalAmount || 0
-  const address = orderData?.address || {}
+  const total = orderData?.totalAmount ?? orderData?.total ?? 0
+  const address = orderData?.address ?? {}
 
   return (
     <main className="order-detail-page">
@@ -212,7 +222,7 @@ console.log("orderData?.items ",orderData?.items );
 
                 <div className="order-items-panel">
                   {items.map((item) => (
-                    <div key={`${orderData?.id || id}-${item.id}`} className="order-product-row">
+                    <div key={`${orderData?._id || orderData?.id || id}-${item._id || item.id || item.title}`} className="order-product-row">
                       <img
                         src={item.image || item.img || fallbackImage}
                         alt={item.title}

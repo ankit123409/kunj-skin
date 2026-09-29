@@ -5,11 +5,22 @@ import type { Product } from './cartSlice'
 type CartLine = Product & { quantity: number }
 
 type OrderItem = {
-  id: string
-  total: number
+  id?: string
+  _id?: string
+  total?: number
+  totalAmount?: number
   createdAt: string
-  status: 'Placed' | 'Packed' | 'Shipped' | 'Delivered'
+  status: 'Placed' | 'Packed' | 'Shipped' | 'Delivered' | string
   items: CartLine[]
+  address?: {
+    name?: string
+    mobile?: string
+    addressLine1?: string
+    addressLine2?: string
+    city?: string
+    state?: string
+    pincode?: string
+  }
 }
 
 export type OrdersState = {

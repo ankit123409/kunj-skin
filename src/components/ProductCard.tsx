@@ -15,7 +15,7 @@ console.log("product1111",product);
   )
 
   const inCart = quantity > 0
-  const isFavorite = useAppSelector((state) => state.favorites.items.includes(product._id))
+  const isFavorite = useAppSelector((state) => state.favorites.items.includes(product._id || product.id || ''))
 
   const mrp = Math.round(product.price * 1.25)
   const discount = Math.round(((mrp - product.price) / mrp) * 100)
@@ -41,7 +41,7 @@ console.log("product1111",product);
           aria-label={isFavorite ? 'Remove from wishlist' : 'Add to wishlist'}
           onClick={(e) => {
             e.stopPropagation()
-            dispatch(toggleFavorite(product._id))
+            dispatch(toggleFavorite(product._id || product.id || ''))
           }}
         >
           {isFavorite ? '♥' : '♡'}
@@ -142,7 +142,7 @@ console.log("product1111",product);
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation()
-                  dispatch(decrement(product._id))
+                  dispatch(decrement(product._id || product.id || ''))
                 }}
                 aria-label={`Decrease quantity for ${product.title}`}
               >

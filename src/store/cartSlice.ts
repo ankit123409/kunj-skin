@@ -10,7 +10,8 @@ export type Product = {
   description?: string
   createdAt?: string
   updatedAt?: string
-  _id?: string
+  _id: string
+  id?: string
 }
 
 type CartItem = Product & { quantity: number }

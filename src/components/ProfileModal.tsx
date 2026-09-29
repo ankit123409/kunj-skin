@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import './ProfileModal.css'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { closeProfile, finishCheckout } from '../store/uiSlice'
@@ -14,11 +14,10 @@ export default function ProfileModal() {
   const isLoggedIn = useAppSelector((s) => s.auth.isLoggedIn)
   const mobile = useAppSelector((s) => s.auth.mobile)
   const loginError = useAppSelector((s) => s.auth.loginError)
-  const orders = useAppSelector((s) => s.orders.items)
+  // const orders = useAppSelector((s) => s.orders.items)
   const cartItems = useAppSelector((s) => s.cart.items)
   const checkoutFlow = useAppSelector((s) => s.ui.checkoutFlow)
 
-  const [phone, setPhone] = useState(mobile)
   const [authMode, setAuthMode] = useState<'register' | 'login'>('register')
   const [regName, setRegName] = useState('')
   const [regMobile, setRegMobile] = useState('')
@@ -26,7 +25,7 @@ export default function ProfileModal() {
   const [loginMobile, setLoginMobile] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  // const [loading, setLoading] = useState(false)
   const [authSuccess, setAuthSuccess] = useState(false)
   const [authMessage, setAuthMessage] = useState('')
   const [showSuccess, setShowSuccess] = useState(false)
@@ -65,14 +64,14 @@ export default function ProfileModal() {
     return () => window.clearTimeout(timeout)
   }, [showSuccess, dispatch])
 
-  const orderSummary = useMemo(
-    () =>
-      orders.map((order) => ({
-        ...order,
-        count: order.items.reduce((sum, item) => sum + item.quantity, 0),
-      })),
-    [orders]
-  )
+  // const orderSummary = useMemo(
+  //   () =>
+  //     orders.map((order) => ({
+  //       ...order,
+  //       count: order.items.reduce((sum, item) => sum + item.quantity, 0),
+  //     })),
+  //   [orders]
+  // )
 
   if (!isOpen) return null
 
@@ -87,7 +86,7 @@ export default function ProfileModal() {
     }
 
     setError('')
-    setLoading(true)
+    // setLoading(true)
     registerApi({ name, mobile: mobileVal, password })
       .then((res) => {
         console.log("rseses",res);
@@ -123,7 +122,7 @@ export default function ProfileModal() {
         
         setError(err?.response?.data?.message || 'Registration failed')
       })
-      .finally(() => setLoading(false))
+      // .finally(() => setLoading(false))
   }
 
   const handleLogin = () => {
@@ -136,7 +135,7 @@ export default function ProfileModal() {
     }
 
     setError('')
-    setLoading(true)
+    // setLoading(true)
     loginApi({ mobile: mobileVal, password })
       .then((res) => {
         const msg = res?.message || 'Login successful'
@@ -163,7 +162,7 @@ export default function ProfileModal() {
       .catch((err) => {
         setError(err?.response?.data?.message || 'Login failed')
       })
-      .finally(() => setLoading(false))
+      // .finally(() => setLoading(false))
   }
 
   const handleLogout = () => {

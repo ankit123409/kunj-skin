@@ -31,7 +31,7 @@ export default function ProductList({
 
       <div className="grid">
         {filteredProducts?.map((p) => (
-          <ProductCard key={p.id} product={p} />
+          <ProductCard key={p._id} product={p} />
         ))}
       </div>
 

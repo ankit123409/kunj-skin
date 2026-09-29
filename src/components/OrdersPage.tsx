@@ -5,12 +5,15 @@ import { getMyOrdersApi } from '../api/api'
 import { navigate } from '../router'
 
 type OrderRow = {
-  id: string
-  totalAmount: number
+  id?: string
+  _id?: string
+  totalAmount?: number
+  total?: number
   createdAt: string
   status: string
   items: Array<{
-    id: string
+    id?: string
+    _id?: string
     title: string
     price: number
     quantity: number
@@ -28,11 +31,11 @@ export default function OrdersPage() {
     if (!token) {
       setOrders(localOrders.map((order) => ({
         id: order.id,
-        totalAmount: order.totalAmount,
+        totalAmount: order.total,
         createdAt: order.createdAt,
         status: order.status,
         items: order.items.map((item) => ({
-          id: item.id,
+          id: item.id ?? item._id,
           title: item.title,
           price: item.price,
           quantity: item.quantity,
@@ -41,7 +44,7 @@ export default function OrdersPage() {
       return
     }
 
-    let isMounted = true
+    // let isMounted = true
     setLoading(true)
 
     getMyOrdersApi(token)
@@ -106,17 +109,19 @@ export default function OrdersPage() {
       // })
 
     return () => {
-      isMounted = false
+      // isMounted = false
     }
   }, [localOrders])
 
   const renderOrders = orders.length > 0 ? orders : localOrders.map((order) => ({
     id: order.id,
-    totalAmount: order.totalAmount,
+    _id: order._id,
+    totalAmount: order.totalAmount ?? order.total ?? 0,
     createdAt: order.createdAt,
     status: order.status,
     items: order.items.map((item) => ({
-      id: item.id,
+      id: item._id ?? item.id,
+      _id: item._id,
       title: item.title,
       price: item.price,
       quantity: item.quantity,
@@ -148,16 +153,16 @@ export default function OrdersPage() {
           </div>
         ) : (
           <div className="orders-list">
-            {orders?.map((order) => (
+            {orders?.map((order, index) => (
               <button
-                key={order.id}
+                key={order._id || order.id || `order-${index}`}
                 type="button"
                 className="order-summary-card"
                 onClick={() => navigate(`/order/${order._id || order.id}`)}
               >
                
                 <div className="order-summary-top">
-                  <strong>{order._id}</strong>
+                  <strong>{order._id || order.id}</strong>
                   <span className="order-status-tag">{order.status}</span>
                 </div>
 
@@ -168,14 +173,14 @@ export default function OrdersPage() {
 
                 <div className="order-summary-items">
                   {order.items.map((item) => (
-                    <div key={`${order.id}-${item.id}`} className="mini-item-row">
+                    <div key={`${order._id || order.id || 'order'}-${item.id || item._id || item.title}`} className="mini-item-row">
                       <span>{item.title}</span>
                       <strong>₹{item.price * item.quantity}</strong>
                     </div>
                   ))}
                 </div>
 
-                <div className="order-summary-total">Order total: ₹{order.totalAmount}</div>
+                <div className="order-summary-total">Order total: ₹{order.totalAmount ?? order.total ?? 0}</div>
               </button>
             ))}
           </div>

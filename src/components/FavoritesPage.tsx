@@ -11,7 +11,7 @@ export default function FavoritesPage() {
   const products = useAppSelector((state) => state.products.items)
 console.log("likedProducts1",products);
 
-  const likedProducts = products.filter((product) => favoriteIds.includes(product?._id))
+  const likedProducts = products.filter((product) => product._id && favoriteIds.includes(product._id))
 console.log("likedProducts",favoriteIds);
 
   if (likedProducts.length === 0) {
