@@ -10,7 +10,7 @@ export type Product = {
   description?: string
   createdAt?: string
   updatedAt?: string
-  __id?: string
+  _id?: string
 }
 
 type CartItem = Product & { quantity: number }
@@ -29,10 +29,8 @@ const cartSlice = createSlice({
   reducers: {
     addToCart(state, action: PayloadAction<Product>) {
       const payload = action.payload
-      console.log("payload",payload);
       
-      const existing = state.items.find((i) => i._id === payload.__id)
-      console.log("existing",existing);
+      const existing = state.items.find((i) => i._id === payload._id)
       
       if (existing) existing.quantity += 1
       else state.items.push({ ...payload, quantity: 1 })

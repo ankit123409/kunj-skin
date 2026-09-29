@@ -129,7 +129,7 @@ export default function CartDrawer(){
         <div className="cart-body">
           <ul className="cart-items">
             {items.map(item => (
-              <li key={item.id} className="cart-product">
+              <li key={item._id} className="cart-product">
                 <div className="cart-product-image-wrap">
                   <img src={item.image || item.img || fallbackImage} alt={item.title} />
                 </div>
@@ -148,7 +148,7 @@ export default function CartDrawer(){
 
                 <div className="cart-product-actions">
                   <div className="cart-qty">
-                    <button type="button" onClick={() => dispatch(decrement(item.id))}>−</button>
+                    <button type="button" onClick={() => dispatch(decrement(item._id))}>−</button>
                     <span>{item.quantity}</span>
                     <button type="button" onClick={() => dispatch(addToCart(item))}>+</button>
                   </div>
