@@ -11,6 +11,20 @@
   -webkit-overflow-scrolling: touch;
 }
 
+.profile-modal {
+  position: relative;
+  width: min(520px, calc(100% - 24px));
+  max-width: 500px;
+  max-height: calc(100dvh - 24px);
+  background: #fff;
+  border-radius: 20px;
+  border: 1px solid #f0e6df;
+  box-shadow: 0 26px 50px rgba(17, 16, 17, 0.18);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
 .order-success-toast {
   display: flex;
   align-items: center;
@@ -35,19 +49,6 @@
   background: #2d9a5f;
   color: #fff;
   font-size: 14px;
-}
-
-.profile-modal {
-  position: relative;
-  width: min(520px, 100%);
-  max-height: calc(100vh - 32px);
-  background: #fff;
-  border-radius: 20px;
-  border: 1px solid #f0e6df;
-  box-shadow: 0 26px 50px rgba(17, 16, 17, 0.18);
-  overflow: auto;
-  overscroll-behavior: contain;
-  scrollbar-gutter: stable;
 }
 
 .order-success-popup {
@@ -515,16 +516,57 @@
 @media (max-width: 520px) {
   .profile-modal-backdrop {
     padding: 12px;
-    align-items: flex-start;
+    align-items: center;
   }
 
   .profile-modal {
-    width: 100%;
-    max-height: calc(100vh - 24px);
+    width: calc(100% - 12px);
+    max-width: 500px;
+    max-height: calc(100dvh - 12px);
     border-radius: 16px;
   }
 
   .profile-header h3 {
     font-size: 20px;
+  }
+
+  .login-panel,
+  .orders-panel,
+  .account-panel,
+  .checkout-panel {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .auth-toggle,
+  .save-as-options,
+  .profile-tabs {
+    gap: 8px;
+  }
+
+  .profile-tabs {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .save-option {
+    flex: 1 1 calc(50% - 8px);
+    justify-content: center;
+  }
+}
+
+@media (max-width: 360px) {
+  .profile-modal-backdrop {
+    padding: 8px;
+  }
+
+  .profile-modal {
+    width: calc(100% - 8px);
+    max-height: calc(100dvh - 8px);
+  }
+
+  .primary-button,
+  .ghost-button {
+    padding: 12px 10px;
   }
 }

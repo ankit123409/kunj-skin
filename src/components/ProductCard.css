@@ -621,6 +621,8 @@
 
   .product-card {
     border-radius: 14px;
+    width: 100%;
+    max-width: 100%;
   }
 
   .product-media {
@@ -634,19 +636,15 @@
   .discount-badge {
     top: 10px;
     left: 10px;
-
     font-size: 9px;
-
     padding: 6px 8px;
   }
 
   .wishlist {
     width: 33px;
     height: 33px;
-
     top: 9px;
     right: 9px;
-
     font-size: 18px;
   }
 
@@ -690,6 +688,14 @@
     font-size: 10px;
   }
 
+  .product-actions {
+    gap: 6px;
+  }
+
+  .quantity-control {
+    min-width: 0;
+  }
+
   .selling-price {
     font-size: 18px;
   }
@@ -704,7 +710,6 @@
 
   .add-button {
     padding: 11px 8px;
-
     font-size: 10px;
   }
 
@@ -730,6 +735,20 @@
 
   .product-title {
     font-size: 13px;
+  }
+
+  .product-actions {
+    display: grid;
+    grid-template-columns: 90px minmax(0, 1fr);
+  }
+
+  .qty-button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .qty-value {
+    min-width: 26px;
   }
 
   .selling-price {

@@ -351,6 +351,7 @@
   justify-content: center;
 
   padding: 30px;
+  box-sizing: border-box;
 }
 
 
@@ -606,14 +607,15 @@
   }
 
   .video-modal {
-    padding: 16px;
+    padding: 12px;
   }
 
   .video-modal-content {
-    width: min(100%, 520px);
-    height: auto;
+    width: calc(100% - 12px);
+    max-width: 520px;
+    height: min(68dvh, 520px);
     aspect-ratio: 16 / 9;
-    max-height: 72vh;
+    max-height: 68dvh;
   }
 
   .modal-close {

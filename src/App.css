@@ -30,12 +30,15 @@
 html {
   width: 100%;
   min-height: 100%;
+  overflow-x: hidden;
 }
 
 body {
   margin: 0;
   width: 100%;
+  max-width: 100%;
   min-width: 320px;
+  overflow-x: hidden;
 
   font-family:
     Inter,
