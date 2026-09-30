@@ -7,6 +7,8 @@
   justify-content: center;
   z-index: 100;
   padding: 20px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .order-success-toast {
@@ -38,11 +40,14 @@
 .profile-modal {
   position: relative;
   width: min(520px, 100%);
+  max-height: calc(100vh - 32px);
   background: #fff;
   border-radius: 20px;
   border: 1px solid #f0e6df;
   box-shadow: 0 26px 50px rgba(17, 16, 17, 0.18);
-  overflow: hidden;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .order-success-popup {
@@ -508,7 +513,14 @@
 }
 
 @media (max-width: 520px) {
+  .profile-modal-backdrop {
+    padding: 12px;
+    align-items: flex-start;
+  }
+
   .profile-modal {
+    width: 100%;
+    max-height: calc(100vh - 24px);
     border-radius: 16px;
   }
 

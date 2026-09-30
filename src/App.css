@@ -80,14 +80,21 @@ body {
    ========================================================= */
 
 #center {
-  width: 100%;
+  width: min(100%, 1480px);
   flex: 1;
 
   display: block;
 
   padding: 0;
 
-  margin: 0;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  #center {
+    width: 100%;
+    max-width: 100%;
+  }
 }
 
 

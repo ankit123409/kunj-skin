@@ -6,6 +6,8 @@
   background: rgba(20, 18, 17, 0.25);
   backdrop-filter: blur(2px);
   z-index: 120;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .cart-overlay.visible {
@@ -16,12 +18,14 @@
   width: 390px;
   max-width: 100%;
   height: 100vh;
+  max-height: 100vh;
   background: #f7f1ee;
   box-shadow: -10px 0 28px rgba(34, 23, 16, 0.14);
   display: flex;
   flex-direction: column;
   transform: translateX(110%);
   transition: transform 320ms cubic-bezier(.22,.9,.2,1);
+  overflow: hidden;
 }
 
 .cart-drawer.open {
@@ -81,6 +85,8 @@
   padding: 14px 16px 12px;
   overflow: auto;
   flex: 1;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .cart-items {

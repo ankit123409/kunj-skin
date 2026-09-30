@@ -6,27 +6,27 @@ import productHero from '../assets/product2.png'
 
 const videos = [
   {
-    id: 'v1',
+    id: 'product1video',
     title: 'All About ACV CQR Plus Effervescent',
-    src: 'https://www.w3schools.com/html/mov_bbb.mp4',
+    src: 'https://player.cloudinary.com/embed/?cloud_name=yllqkbrj&public_id=product1video',
     thumb: heroImage,
   },
   {
-    id: 'v2',
+    id: 'product2video',
     title: 'Why Soha Chooses Super Strength',
-    src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    src: 'https://player.cloudinary.com/embed/?cloud_name=yllqkbrj&public_id=product2video',
     thumb: bannerImage,
   },
   {
-    id: 'v3',
+    id: 'gemini_generated_video_fd4c45f1',
     title: "Shehnaaz Gill's hack to boost metabolism",
-    src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+    src: 'https://player.cloudinary.com/embed/?cloud_name=yllqkbrj&public_id=gemini_generated_video_fd4c45f1',
     thumb: productHero,
   },
   {
-    id: 'v4',
+    id: 'video-4',
     title: 'Glow Naturally With Dot & Key',
-    src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+    src: 'https://player.cloudinary.com/embed/?cloud_name=yllqkbrj&public_id=gemini_generated_video_fd4c45f1',
     thumb: heroImage,
   },
 ]
@@ -205,12 +205,13 @@ export default function VideoSection() {
             onClick={(e) => e.stopPropagation()}
           >
 
-            <video
+            <iframe
               key={selectedVideo.id}
-              controls
-              autoPlay
-              playsInline
               src={selectedVideo.src}
+              title={selectedVideo.title}
+              allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+              allowFullScreen
+              className="video-embed"
             />
 
           </div>

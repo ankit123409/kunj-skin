@@ -1,6 +1,7 @@
 import { useAppSelector } from '../hooks'
 import CustomerReviews from './CustomerReviews'
 import ProductCard from './ProductCard'
+import VideoSection from './VideoSection'
 import './ProductList.css'
 
 export default function ProductList({
@@ -39,6 +40,7 @@ export default function ProductList({
         <div className="no-results">No products found for "{search}"</div>
       )}
 
+      {!query && <VideoSection />}
       {!query && <CustomerReviews variant="static" />}
     </section>
   )
