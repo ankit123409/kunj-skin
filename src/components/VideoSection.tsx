@@ -66,7 +66,7 @@ export default function VideoSection() {
 
         <div>
           <span className="video-label">
-            DOT & KEY
+            Kunj &  Skin
           </span>
 
           <h3>Watch & Discover</h3>
@@ -123,7 +123,7 @@ export default function VideoSection() {
                 {/* VIDEO LABEL */}
 
                 <div className="video-card-label">
-                  Dot & Key
+                  Kunj Skin
                 </div>
 
               </div>
