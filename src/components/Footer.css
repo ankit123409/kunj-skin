@@ -1,5 +1,5 @@
 .site-footer {
-  background: linear-gradient(180deg, #ef795a 0%, #e7675b 100%);
+  background: linear-gradient(180deg, #4169E1 0%, #e7675b 100%);
   color: #fffaf7;
   width: 100%;
   padding: 28px 20px 20px;
@@ -76,7 +76,7 @@
 
 .subscribe-box button {
   border: none;
-  background: linear-gradient(135deg, #ef795a, #e86068);
+  background: linear-gradient(135deg, #4169E1, #e86068);
   color: #fff;
   padding: 18px 22px;
   font-size: 20px;

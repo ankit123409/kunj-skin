@@ -61,7 +61,7 @@
 }
 
 .back-button:hover {
-  color: #ef795a;
+  color: #4169E1;
 }
 
 
@@ -202,7 +202,7 @@
 
   z-index: 5;
 
-  background: #ef795a;
+  background: #4169E1;
 
   color: white;
 
@@ -254,7 +254,7 @@
 }
 
 .detail-wishlist:hover {
-  background: #ef795a;
+  background: #4169E1;
 
   color: white;
 
@@ -341,7 +341,7 @@
 
   background: #fff0e9;
 
-  color: #ef795a;
+  color: #4169E1;
 
   font-size: 15px;
 }
@@ -379,7 +379,7 @@
    ========================================================= */
 
 .detail-category {
-  color: #ef795a;
+  color: #4169E1;
 
   font-size: 11px;
 
@@ -582,13 +582,13 @@
 }
 
 .size-option:hover {
-  border-color: #ef795a;
+  border-color: #4169E1;
 }
 
 .size-option.active {
   color: #d96245;
 
-  border: 1.5px solid #ef795a;
+  border: 1.5px solid #4169E1;
 
   background: #fff4ef;
 
@@ -685,7 +685,7 @@
   align-items: center;
   justify-content: center;
 
-  background: #ef795a;
+  background: #4169E1;
 
   color: white;
 
@@ -834,7 +834,7 @@
 
   border-radius: 8px;
 
-  border: 1px solid #ef795a;
+  border: 1px solid #4169E1;
 
   background: transparent;
 
@@ -848,7 +848,7 @@
 }
 
 .pincode-box > button:hover {
-  background: #ef795a;
+  background: #4169E1;
 
   color: white;
 }
@@ -915,7 +915,7 @@
 
   background: #fff0e9;
 
-  color: #ef795a;
+  color: #4169E1;
 
   font-size: 14px;
 }
@@ -995,7 +995,7 @@
 
   border-radius: 10px;
 
-  background: #ef795a;
+  background: #4169E1;
 
   color: white;
 
@@ -1017,7 +1017,7 @@
 }
 
 .add-detail-button:hover {
-  background: #df6548;
+  background: #4169E1;
 
   transform: translateY(-2px);
 
@@ -1080,7 +1080,7 @@
 
   background: #fff0e9;
 
-  color: #ef795a;
+  color: #4169E1;
 
   font-size: 16px;
 }
@@ -1129,7 +1129,7 @@
 .product-not-found button {
   border: none;
 
-  background: #ef795a;
+  background: #4169E1;
 
   color: white;
 

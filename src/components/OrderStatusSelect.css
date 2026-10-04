@@ -1,0 +1,49 @@
+.order-status-select-wrap {
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+.order-status-select-wrap.compact {
+  margin-top: 10px;
+}
+
+.order-status-select-wrap label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #878787;
+}
+
+.order-status-select {
+  width: 100%;
+  border: 1px solid #d5d9e0;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #212121;
+  background: #fff;
+  cursor: pointer;
+}
+
+.order-status-select:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.order-status-select-error {
+  margin: 0;
+  color: #b63131;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.order-status-select-note {
+  margin: 0;
+  color: #878787;
+  font-size: 12px;
+}

@@ -7,6 +7,7 @@ export type Product = {
   size?: string
   image?: string
   img?: string
+  video?: string
   description?: string
   createdAt?: string
   updatedAt?: string

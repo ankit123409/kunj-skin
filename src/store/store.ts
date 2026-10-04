@@ -15,6 +15,27 @@ function loadFromStorage<T>(key: string): T | undefined {
   }
 }
 
+function hydrateAuth(): AuthState {
+  const stored = loadFromStorage<AuthState>('kunj-skin-auth') ?? initialAuthState
+  let role = stored.role || ''
+  let name = stored.name || ''
+
+  try {
+    const user = JSON.parse(localStorage.getItem('kunj-skin-user') || '{}') as { role?: string; name?: string }
+    if (!role && user.role) role = user.role
+    if (!name && user.name) name = user.name
+  } catch {
+    // keep stored values
+  }
+
+  return {
+    ...initialAuthState,
+    ...stored,
+    role,
+    name,
+  }
+}
+
 const reducer = {
   cart: cartReducer,
   ui: uiReducer,
@@ -36,7 +57,7 @@ export type RootState = {
 export const store = configureStore({
   reducer,
   preloadedState: {
-    auth: loadFromStorage<AuthState>('kunj-skin-auth') ?? initialAuthState,
+    auth: hydrateAuth(),
     orders: loadFromStorage<OrdersState>('kunj-skin-orders') ?? initialOrdersState,
   } satisfies Partial<RootState>,
 })

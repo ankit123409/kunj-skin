@@ -25,6 +25,11 @@
   margin-bottom: 18px;
 }
 
+.order-detail-page .order-status-select-wrap {
+  margin: 0 0 18px;
+  max-width: 280px;
+}
+
 .order-top-meta {
   display: flex;
   justify-content: space-between;
@@ -151,7 +156,7 @@
 }
 
 .order-not-found button {
-  background: #ef795a;
+  background: #4169E1;
   color: #fff;
   border: none;
   border-radius: 12px;

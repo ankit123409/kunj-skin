@@ -1,13 +1,91 @@
 import axios from 'axios'
-import { AUTH } from './endpoints'
+import { API_BASE } from './endpoints'
 
 const instance = axios.create({
-  baseURL: AUTH.REGISTER.replace('/auth/register', ''),
+  baseURL: API_BASE,
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 5000,
+  timeout: 15000,
 })
+
+export type PaymentType = 1 | 2 | 3
+
+export type OrderAddress = {
+  name: string
+  mobile: string
+  addressLine1: string
+  addressLine2: string
+  city: string
+  state: string
+  pincode: string
+}
+
+export type SavedAddress = OrderAddress & {
+  _id?: string
+  id?: string
+}
+
+export function getAddressId(address: SavedAddress) {
+  return String(address._id || address.id || '')
+}
+
+function normalizeAddressList(data: unknown): SavedAddress[] {
+  if (Array.isArray(data)) return data as SavedAddress[]
+  if (data && typeof data === 'object') {
+    const obj = data as Record<string, unknown>
+    if (Array.isArray(obj.data)) return obj.data as SavedAddress[]
+    if (Array.isArray(obj.addresses)) return obj.addresses as SavedAddress[]
+    if (Array.isArray(obj.result)) return obj.result as SavedAddress[]
+    if (obj.data && typeof obj.data === 'object') {
+      const inner = obj.data as Record<string, unknown>
+      if (Array.isArray(inner.addresses)) return inner.addresses as SavedAddress[]
+      if (Array.isArray(inner.data)) return inner.data as SavedAddress[]
+    }
+  }
+  return []
+}
+
+export type CreateOrderPayload = {
+  items: { product: string; quantity: number }[]
+  address: OrderAddress
+  paymentType: PaymentType
+}
+
+export type RazorpayOrderData = {
+  key: string
+  orderId: string
+  amount: number
+  currency: string
+  paymentType: PaymentType
+}
+
+export type CreateOrderResponse = {
+  success?: boolean
+  message?: string
+  data?: {
+    _id?: string
+    total?: number
+    order?: Record<string, unknown> & { _id?: string; total?: number }
+    razorpay?: RazorpayOrderData
+  }
+  order?: Record<string, unknown> & { _id?: string; total?: number }
+}
+
+export type VerifyPaymentPayload = {
+  razorpay_order_id: string
+  razorpay_payment_id: string
+  razorpay_signature: string
+}
+
+function authHeaders(token?: string) {
+  return token ? { Authorization: `Bearer ${token}` } : undefined
+}
+
+export function getAuthToken(): string | null {
+  if (typeof window === 'undefined') return null
+  return window.localStorage.getItem('kunj-skin-token')
+}
 
 export async function registerApi(payload: { name: string; mobile: string; password: string }) {
   const res = await instance.post('/auth/register', payload)
@@ -19,42 +97,118 @@ export async function loginApi(payload: { mobile: string; password: string }) {
   return res.data
 }
 
-export async function createOrderApi(payload: { items: { product: string; quantity: number }[]; address: { name: string; mobile: string; addressLine1: string; addressLine2: string; city: string; state: string; pincode: string } }, token?: string) {
-  const res = await instance.post('/orders', payload, {
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+export async function getAddressesApi(token?: string) {
+  const res = await instance.get('/addresses', {
+    headers: authHeaders(token),
   })
+  return {
+    raw: res.data as { success?: boolean; message?: string },
+    addresses: normalizeAddressList(res.data),
+  }
+}
 
+export async function createAddressApi(payload: OrderAddress, token?: string) {
+  const res = await instance.post('/addresses', payload, {
+    headers: authHeaders(token),
+  })
+  return res.data as { success?: boolean; message?: string; data?: unknown }
+}
+
+export async function updateAddressApi(id: string, payload: OrderAddress, token?: string) {
+  const res = await instance.put(`/addresses/${id}`, payload, {
+    headers: authHeaders(token),
+  })
+  return res.data as { success?: boolean; message?: string; data?: unknown }
+}
+
+export async function deleteAddressApi(id: string, token?: string) {
+  const res = await instance.delete(`/addresses/${id}`, {
+    headers: authHeaders(token),
+  })
+  return res.data as { success?: boolean; message?: string }
+}
+
+export async function createOrderApi(payload: CreateOrderPayload, token?: string) {
+  const res = await instance.post<CreateOrderResponse>('/orders', payload, {
+    headers: authHeaders(token),
+  })
   return res.data
+}
+
+export async function verifyPaymentApi(payload: VerifyPaymentPayload, token?: string) {
+  const res = await instance.post('/payment/verify', payload, {
+    headers: authHeaders(token),
+  })
+  return res.data as { success?: boolean; message?: string; data?: unknown }
 }
 
 export async function getMyOrdersApi(token?: string) {
   const res = await instance.get('/orders/my', {
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    headers: authHeaders(token),
   })
+  return res.data
+}
 
+export async function getAdminOrdersApi(token?: string) {
+  const res = await instance.get('/orders/admin/all', {
+    headers: authHeaders(token),
+  })
   return res.data
 }
 
 export async function getOrderByIdApi(id: string, token?: string) {
   const res = await instance.get(`/orders/${id}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    headers: authHeaders(token),
   })
-
   return res.data
+}
+
+export async function updateOrderStatusApi(id: string, status: string, token?: string) {
+  const res = await instance.patch(`/orders/${id}/status`, { status }, {
+    headers: authHeaders(token),
+  })
+  return res.data as { success?: boolean; message?: string; data?: unknown }
 }
 
 export async function getProducts() {
   const res = await instance.get('/products')
   const data = res.data
 
-  // Normalize common API shapes to an array of products
   if (Array.isArray(data)) return data
   if (Array.isArray(data?.data)) return data.data
   if (Array.isArray(data?.products)) return data.products
   if (Array.isArray(data?.result)) return data.result
-
-  // fallback: if server returned a single object, wrap it
   if (data && typeof data === 'object') return [data]
 
   return []
+}
+
+export type ProductPayload = {
+  image: string
+  video: string
+  title: string
+  size: string
+  price: number
+  description: string
+}
+
+export async function createProductApi(payload: ProductPayload, token?: string) {
+  const res = await instance.post('/products', payload, {
+    headers: authHeaders(token),
+  })
+  return res.data as { success?: boolean; message?: string; data?: unknown }
+}
+
+export async function updateProductApi(id: string, payload: ProductPayload, token?: string) {
+  const res = await instance.put(`/products/${id}`, payload, {
+    headers: authHeaders(token),
+  })
+  return res.data as { success?: boolean; message?: string; data?: unknown }
+}
+
+export async function deleteProductApi(id: string, token?: string) {
+  const res = await instance.delete(`/products/${id}`, {
+    headers: authHeaders(token),
+  })
+  return res.data as { success?: boolean; message?: string }
 }

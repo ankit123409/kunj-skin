@@ -5,6 +5,8 @@ import { useAppSelector } from '../hooks'
 import { navigate } from '../router'
 import { getOrderByIdApi } from '../api/api'
 import CustomerReviews from './CustomerReviews'
+import OrderStatusSelect from './OrderStatusSelect'
+import { isAdminRole, statusHint, statusLabel } from '../utils/orderStatus'
 
 type OrderProduct = {
   id?: string
@@ -40,6 +42,7 @@ export default function OrderDetail({ id }: { id: string }) {
   const localOrder = useAppSelector((state) =>
     state.orders.items.find((entry) => entry.id === id || entry._id === id)
   ) as OrderRecord | undefined
+  const isAdmin = isAdminRole(useAppSelector((state) => state.auth.role))
   const [order, setOrder] = useState<OrderRecord | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -183,8 +186,22 @@ console.log("orderData?.items ",orderData?.items );
               <div className="detail-info detail-info--full">
                 <div className="detail-header-row">
                   <div className="detail-category">Order Summary</div>
-                  <div className="detail-badge">{orderData?.status || 'PREPARING'}</div>
+                  <div className="detail-badge">{statusLabel(orderData?.status || 'pending', orderData?.createdAt)}</div>
                 </div>
+
+                {isAdmin && (
+                  <OrderStatusSelect
+                    orderId={orderData?._id || orderData?.id || id}
+                    status={orderData?.status || 'pending'}
+                    onUpdated={(nextStatus) => {
+                      setOrder((current) => ({
+                        ...(current || orderData || { items: [] }),
+                        items: current?.items || orderData?.items || [],
+                        status: nextStatus,
+                      }))
+                    }}
+                  />
+                )}
 
                 <div className="order-top-meta">
                   <div className="order-id-wrap">
@@ -203,10 +220,10 @@ console.log("orderData?.items ",orderData?.items );
                   </div>
                 </div>
 
-                <h2 className="detail-title">Your order is on the way</h2>
+                <h2 className="detail-title">{statusLabel(orderData?.status || 'pending', orderData?.createdAt)}</h2>
 
                 <p className="detail-description">
-                  Thanks for shopping with kunj & skin. Your skincare essentials are being prepared for delivery.
+                  {statusHint(orderData?.status || 'pending')}
                 </p>
 
                 <div className="order-address-card">
