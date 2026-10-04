@@ -1,5 +1,5 @@
-export const API_BASE = 'http://localhost:8001/api'
-// export const API_BASE = 'https://kunj-skin-backend.vercel.app/api'
+// export const API_BASE = 'http://localhost:8001/api'
+export const API_BASE = 'https://kunj-skin-backend.vercel.app/api'
 
 export const AUTH = {
   REGISTER: `${API_BASE}/auth/register`,
