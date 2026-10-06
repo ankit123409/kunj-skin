@@ -87,7 +87,7 @@ export function getAuthToken(): string | null {
   return window.localStorage.getItem('kunj-skin-token')
 }
 
-export async function registerApi(payload: { name: string; mobile: string; password: string }) {
+export async function registerApi(payload: { name: string; email: string; mobile: string; password: string }) {
   const res = await instance.post('/auth/register', payload)
   return res.data
 }
@@ -208,6 +208,62 @@ export async function updateProductApi(id: string, payload: ProductPayload, toke
 
 export async function deleteProductApi(id: string, token?: string) {
   const res = await instance.delete(`/products/${id}`, {
+    headers: authHeaders(token),
+  })
+  return res.data as { success?: boolean; message?: string }
+}
+
+export type ProductReview = {
+  _id?: string
+  id?: string
+  user_id?: string
+  product_id?: string
+  review?: string
+  rating?: number
+  createdAt?: string
+  user?: { name?: string }
+}
+
+export type CreateReviewPayload = {
+  product_id: string
+  review: string
+  rating: number
+}
+
+export function getReviewId(review: ProductReview) {
+  return String(review._id || review.id || '')
+}
+
+function normalizeReviewList(data: unknown): ProductReview[] {
+  if (Array.isArray(data)) return data as ProductReview[]
+  if (data && typeof data === 'object') {
+    const obj = data as Record<string, unknown>
+    if (Array.isArray(obj.data)) return obj.data as ProductReview[]
+    if (Array.isArray(obj.reviews)) return obj.reviews as ProductReview[]
+    if (Array.isArray(obj.result)) return obj.result as ProductReview[]
+    if (obj.data && typeof obj.data === 'object') {
+      const inner = obj.data as Record<string, unknown>
+      if (Array.isArray(inner.reviews)) return inner.reviews as ProductReview[]
+      if (Array.isArray(inner.data)) return inner.data as ProductReview[]
+    }
+  }
+  return []
+}
+
+export async function getProductReviewsApi(productId: string) {
+  const res = await instance.get(`/reviews/product/${productId}`)
+  return normalizeReviewList(res.data)
+}
+
+export async function createReviewApi(payload: CreateReviewPayload, token?: string) {
+  const res = await instance.post('/reviews', payload, {
+    headers: authHeaders(token),
+  })
+  return res.data as { success?: boolean; message?: string; data?: unknown }
+}
+
+export async function deleteReviewApi(id: string, token?: string) {
+  const res = await instance.delete(`/reviews/${id}`, {
     headers: authHeaders(token),
   })
   return res.data as { success?: boolean; message?: string }

@@ -26,3 +26,8 @@ export const ADDRESSES = {
   UPDATE: (id: string) => `${API_BASE}/addresses/${id}`,
   DELETE: (id: string) => `${API_BASE}/addresses/${id}`,
 }
+export const REVIEWS = {
+  CREATE: `${API_BASE}/reviews`,
+  BY_PRODUCT: (productId: string) => `${API_BASE}/reviews/product/${productId}`,
+  DELETE: (id: string) => `${API_BASE}/reviews/${id}`,
+}

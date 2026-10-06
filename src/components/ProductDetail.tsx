@@ -246,7 +246,7 @@ export default function ProductDetail({ id }: { id: string }) {
                 OFFERS
             ================================================= */}
 
-            <div className="offers-box">
+            {/* <div className="offers-box">
 
               <div className="offers-heading">
 
@@ -305,7 +305,7 @@ export default function ProductDetail({ id }: { id: string }) {
 
               {/* Pincode */}
 
-              <div className="pincode-box">
+              {/* <div className="pincode-box">
 
                 <div className="pincode-input-wrapper">
 
@@ -323,9 +323,9 @@ export default function ProductDetail({ id }: { id: string }) {
                   CHECK
                 </button>
 
-              </div>
+              </div> */}
 
-            </div>
+            {/* </div> */} 
 
 
             {/* =================================================

@@ -9,6 +9,7 @@ const resetStoredOrders = () => {
 
 type User = {
   name: string
+  email?: string
   mobile: string
   password: string
 }

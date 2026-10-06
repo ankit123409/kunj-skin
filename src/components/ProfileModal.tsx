@@ -25,6 +25,7 @@ import { placeOrder } from '../store/ordersSlice'
 import { navigate } from '../router'
 import { openRazorpayCheckout } from '../utils/razorpay'
 import { notifyOrderWhatsApp } from '../utils/whatsapp'
+import { trackFormSubmission, trackLogin, trackPurchase, trackSignUp } from '../analytics/googleAnalytics'
 import { isAdminRole } from '../utils/orderStatus'
 
 const PAYMENT_TYPE_MAP = {
@@ -75,6 +76,7 @@ export default function ProfileModal() {
 
   const [authMode, setAuthMode] = useState<'register' | 'login'>('register')
   const [regName, setRegName] = useState('')
+  const [regEmail, setRegEmail] = useState('')
   const [regMobile, setRegMobile] = useState('')
   const [regPassword, setRegPassword] = useState('')
   const [loginMobile, setLoginMobile] = useState('')
@@ -171,16 +173,17 @@ export default function ProfileModal() {
 
   const handleRegister = () => {
     const name = regName.trim()
+    const email = regEmail.trim()
     const mobileVal = regMobile.replace(/\D/g, '')
     const password = regPassword
 
-    if (!name || !/^\d{10}$/.test(mobileVal) || password.length < 4) {
-      setError('Enter valid name, 10-digit mobile and password (min 4 chars)')
+    if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !/^\d{10}$/.test(mobileVal) || password.length < 4) {
+      setError('Enter valid name, email, 10-digit mobile and password (min 4 chars)')
       return
     }
 
     setError('')
-    registerApi({ name, mobile: mobileVal, password })
+    registerApi({ name, email, mobile: mobileVal, password })
       .then((res) => {
         // server response expected: { success: true, message, token, user }
         const msg = res?.message || 'Registration successful'
@@ -194,8 +197,10 @@ export default function ProfileModal() {
           window.localStorage.setItem('kunj-skin-user', JSON.stringify(user))
         }
 
-        dispatch(registerUser({ name, mobile: mobileVal, password }))
+        dispatch(registerUser({ name, email, mobile: mobileVal, password }))
         dispatch(setAuthenticated({ mobile: mobileVal, name: user?.name || name, role: user?.role }))
+        trackSignUp('mobile')
+        trackFormSubmission('register')
 
         setAuthMessage(msg)
         setAuthSuccess(true)
@@ -235,6 +240,8 @@ export default function ProfileModal() {
         }
 
         dispatch(setAuthenticated({ mobile: mobileVal, name: user?.name, role: user?.role }))
+        trackLogin('mobile')
+        trackFormSubmission('login')
 
         setAuthMessage(msg)
         setAuthSuccess(true)
@@ -435,6 +442,7 @@ export default function ProfileModal() {
   const completeCheckoutSuccess = (
     serverMessage: string,
     serverOrder?: { _id?: string; total?: number },
+    notify?: { name?: string; phone?: string },
   ) => {
     const total =
       Number(serverOrder?.total) ||
@@ -460,10 +468,21 @@ export default function ProfileModal() {
     setOrderMessage(serverMessage)
     dispatch(setDeliveryAddress(addressText))
     dispatch(placeOrder(order))
+    trackPurchase({
+      transaction_id: String(serverOrder?._id || order.id),
+      value: total,
+      currency: 'INR',
+      items: cartItems.map((item) => ({
+        item_id: item._id || item.id || item.title,
+        item_name: item.title,
+        price: Number(item.price || 0),
+        quantity: item.quantity,
+      })),
+    })
     notifyOrderWhatsApp({
-      orderId: order.id,
-      customerName: checkoutForm.fullName.trim(),
-      customerPhone: checkoutForm.phone.trim(),
+      orderId: String(serverOrder?._id || order.id),
+      customerName: notify?.name?.trim() || checkoutForm.fullName.trim() || 'Customer',
+      customerPhone: notify?.phone?.trim() || checkoutForm.phone.trim(),
       totalAmount: total,
     })
     dispatch(clearCart())
@@ -478,6 +497,8 @@ export default function ProfileModal() {
     razorpay: RazorpayOrderData,
     method: 'card' | 'upi',
     token: string,
+    createdOrder?: { _id?: string; total?: number },
+    notify?: { name?: string; phone?: string },
   ) => {
     await openRazorpayCheckout({
       key: razorpay.key,
@@ -520,7 +541,7 @@ export default function ProfileModal() {
             throw new Error(verifyRes?.message || 'Payment verification failed')
           }
 
-          completeCheckoutSuccess(verifyRes?.message || 'Order placed successfully')
+          completeCheckoutSuccess(verifyRes?.message || 'Order placed successfully', createdOrder, notify)
         } catch (err: unknown) {
           setError(getApiErrorMessage(err, 'Payment verification failed. Please contact support.'))
           setPlacingOrder(false)
@@ -583,10 +604,14 @@ export default function ProfileModal() {
       }
 
       // paymentType 1 = Cash → order already placed
+      const createdOrder = extractOrderFromResponse(response)
+      const notify = { name: orderAddress.name, phone: orderAddress.mobile }
+
       if (paymentType === 1) {
         completeCheckoutSuccess(
           response?.message || 'Order placed successfully',
-          extractOrderFromResponse(response),
+          createdOrder,
+          notify,
         )
         return
       }
@@ -597,7 +622,13 @@ export default function ProfileModal() {
         throw new Error('Payment details missing from server. Please try again.')
       }
 
-      await openRazorpayForOrder(razorpay, paymentMethod === 'upi' ? 'upi' : 'card', token)
+      await openRazorpayForOrder(
+        razorpay,
+        paymentMethod === 'upi' ? 'upi' : 'card',
+        token,
+        createdOrder,
+        notify,
+      )
     } catch (err: unknown) {
       setError(getApiErrorMessage(err, 'Unable to place order'))
       setPlacingOrder(false)
@@ -655,6 +686,9 @@ export default function ProfileModal() {
               <>
                 <label className="field-label">Name</label>
                 <input type="text" value={regName} placeholder="Full name" onChange={(e) => setRegName(e.target.value)} />
+
+                <label className="field-label">Email</label>
+                <input type="email" value={regEmail} placeholder="Email" required onChange={(e) => setRegEmail(e.target.value)} />
 
                 <label className="field-label">Mobile</label>
                 <input type="tel" value={regMobile} maxLength={10} placeholder="10-digit mobile" onChange={(e) => setRegMobile(e.target.value)} />

@@ -12,9 +12,11 @@ import AdminProductsPage from './components/AdminProductsPage'
 import ProfileModal from './components/ProfileModal'
 import { usePath } from './router'
 import AdBannerCarousel from './components/AdBannerCarousel'
+import { usePageViews } from './analytics/googleAnalytics'
 
 export default function App() {
   const path = usePath()
+  usePageViews(path)
   const [searchQuery, setSearchQuery] = useState('')
 
   let content: React.ReactNode = null

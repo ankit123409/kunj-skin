@@ -4,7 +4,7 @@ import fallbackImage from '../assets/p1.png'
 import { useAppSelector } from '../hooks'
 import { navigate } from '../router'
 import { getOrderByIdApi } from '../api/api'
-import CustomerReviews from './CustomerReviews'
+import ProductReviewSection from './ProductReviewSection'
 import OrderStatusSelect from './OrderStatusSelect'
 import { isAdminRole, statusHint, statusLabel } from '../utils/orderStatus'
 
@@ -17,6 +17,35 @@ type OrderProduct = {
   image?: string
   img?: string
   size?: string
+  product?: string | { _id?: string; id?: string; title?: string; name?: string }
+  product_id?: string
+  productId?: string
+}
+
+function reviewTargets(items: OrderProduct[]) {
+  const seen = new Set<string>()
+  const targets: { productId: string; title: string }[] = []
+
+  items.forEach((item) => {
+    const product = item.product
+    let productId = ''
+    let title = item.title
+
+    if (typeof product === 'string') {
+      productId = product
+    } else if (product && typeof product === 'object') {
+      productId = String(product._id || product.id || '')
+      title = product.title || product.name || item.title
+    } else {
+      productId = String(item.product_id || item.productId || '')
+    }
+
+    if (!productId || seen.has(productId)) return
+    seen.add(productId)
+    targets.push({ productId, title })
+  })
+
+  return targets
 }
 
 type OrderRecord = {
@@ -274,7 +303,14 @@ console.log("orderData?.items ",orderData?.items );
               </div>
             </div>
 
-            <CustomerReviews variant="input" />
+            {reviewTargets(items).map((target) => (
+              <ProductReviewSection
+                key={target.productId}
+                productId={target.productId}
+                productTitle={target.title}
+                isAdmin={isAdmin}
+              />
+            ))}
             {error && <div className="field-error order-error">{error}</div>}
           </>
         )}
