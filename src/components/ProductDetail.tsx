@@ -90,7 +90,7 @@ export default function ProductDetail({ id }: { id: string }) {
               </div>
 
               <div className="image-brand">
-                kunj & skin
+                kunj skin
               </div>
 
             </div>
@@ -452,7 +452,7 @@ export default function ProductDetail({ id }: { id: string }) {
             <span>✓</span>
             <div>
               <strong>Quality Assured</strong>
-              <small>Authentic kunj & skin products</small>
+              <small>Authentic kunj skin products</small>
             </div>
           </div>
 

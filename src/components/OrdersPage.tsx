@@ -5,7 +5,7 @@ import { useAppSelector } from '../hooks'
 import { getAdminOrdersApi, getMyOrdersApi } from '../api/api'
 import { navigate } from '../router'
 import OrderStatusSelect from './OrderStatusSelect'
-import { isAdminRole, statusHint, statusLabel, statusTone } from '../utils/orderStatus'
+import { isAdminRole, normalizeOrderStatus, ORDER_STATUSES, statusHint, statusLabel, statusTone } from '../utils/orderStatus'
 
 type OrderProduct = {
   id?: string
@@ -72,6 +72,14 @@ function normalizeItem(raw: unknown, index: number): OrderProduct {
   }
 }
 
+function orderDateKey(value: string) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${date.getFullYear()}-${month}-${day}`
+}
+
 function normalizeOrder(raw: unknown, index: number): OrderRow {
   const order = asRecord(raw) ?? {}
   const items = Array.isArray(order.items) ? order.items.map((item, itemIndex) => normalizeItem(item, itemIndex)) : []
@@ -99,6 +107,10 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(false)
   const [query, setQuery] = useState('')
   const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate] = useState('')
+  const [productFilter, setProductFilter] = useState('all')
 
   useEffect(() => {
     const token = typeof window !== 'undefined' ? window.localStorage.getItem('kunj-skin-token') : null
@@ -133,17 +145,43 @@ export default function OrdersPage() {
     }
   }, [localOrders, isAdmin])
 
+  const productOptions = useMemo(() => {
+    const titles = new Set<string>()
+    orders.forEach((order) => {
+      order.items.forEach((item) => {
+        if (item.title) titles.add(item.title)
+      })
+    })
+    return Array.from(titles).sort((a, b) => a.localeCompare(b))
+  }, [orders])
+
+  const filtersActive = statusFilter !== 'all' || Boolean(fromDate) || Boolean(toDate) || productFilter !== 'all'
+
   const visibleOrders = useMemo(() => {
     const term = search.trim().toLowerCase()
-    if (!term) return orders
     return orders.filter((order) => {
+      if (isAdmin && statusFilter !== 'all' && normalizeOrderStatus(order.status) !== statusFilter) return false
+
+      if (isAdmin && (fromDate || toDate)) {
+        const placed = orderDateKey(order.createdAt)
+        if (!placed) return false
+        if (fromDate && placed < fromDate) return false
+        if (toDate && placed > toDate) return false
+      }
+
+      if (isAdmin && productFilter !== 'all') {
+        const matchesProduct = order.items.some((item) => item.title === productFilter)
+        if (!matchesProduct) return false
+      }
+
+      if (!term) return true
       const id = String(order._id || order.id || '').toLowerCase()
       const status = order.status.toLowerCase()
       const titles = order.items.map((item) => item.title.toLowerCase()).join(' ')
       const customer = `${order.customerName || ''} ${order.customerMobile || ''}`.toLowerCase()
       return id.includes(term) || status.includes(term) || titles.includes(term) || customer.includes(term)
     })
-  }, [orders, search])
+  }, [orders, search, isAdmin, statusFilter, fromDate, toDate, productFilter])
 
   const handleSearch = (event: FormEvent) => {
     event.preventDefault()
@@ -170,6 +208,55 @@ export default function OrdersPage() {
           </button>
         </form>
 
+        {isAdmin && (
+          <div className="orders-filters">
+            <label>
+              Status
+              <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+                <option value="all">All statuses</option>
+                {ORDER_STATUSES.map((status) => (
+                  <option key={status} value={status}>
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              From
+              <input type="date" value={fromDate} max={toDate || undefined} onChange={(event) => setFromDate(event.target.value)} />
+            </label>
+            <label>
+              To
+              <input type="date" value={toDate} min={fromDate || undefined} onChange={(event) => setToDate(event.target.value)} />
+            </label>
+            <label>
+              Product
+              <select value={productFilter} onChange={(event) => setProductFilter(event.target.value)}>
+                <option value="all">All products</option>
+                {productOptions.map((title) => (
+                  <option key={title} value={title}>
+                    {title}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {filtersActive && (
+              <button
+                type="button"
+                className="orders-filter-clear"
+                onClick={() => {
+                  setStatusFilter('all')
+                  setFromDate('')
+                  setToDate('')
+                  setProductFilter('all')
+                }}
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        )}
+
         {loading && orders.length === 0 ? (
           <div className="orders-empty">
             <div className="empty-icon">📦</div>
@@ -184,7 +271,9 @@ export default function OrdersPage() {
                 ? isAdmin
                   ? 'Customer orders will appear here.'
                   : 'Your placed orders will appear here.'
-                : 'Try a different product name or order ID.'}
+                : isAdmin
+                  ? 'Try a different status, date, product, or search.'
+                  : 'Try a different product name or order ID.'}
             </p>
           </div>
         ) : (

@@ -7,7 +7,7 @@ const reviews = [
     surname: 'PARASHAR',
     rating: 5,
     title: 'Just Love It!',
-    text: 'I’ve been using kunj & skin facewash for a year now. It’s lightweight & quick-absorbing. Reduces dullness too with a dewy finish. A must-buy!',
+    text: 'I’ve been using kunj skin facewash for a year now. It’s lightweight & quick-absorbing. Reduces dullness too with a dewy finish. A must-buy!',
     product: 'ankita Recommends This Product',
     productTone: 'pink',
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80',

@@ -46,7 +46,7 @@ console.log("likedProducts",favoriteIds);
           <article key={product._id} className="favorites-card">
               <div className="favorites-media" onClick={() => navigate(`/product/${product._id}`)}>
               <img src={product.image || product.img || fallbackImage} alt={product.title} />
-              <span className="favorites-tag">kunj & skin</span>
+              <span className="favorites-tag">kunj skin</span>
             </div>
 
             <div className="favorites-content">
