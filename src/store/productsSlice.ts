@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { getProducts } from '../api/api'
+import { calculateDiscount, getProducts } from '../api/api'
 import type { Product } from './cartSlice'
 
 export type ProductsState = {
@@ -14,10 +14,28 @@ const initialState: ProductsState = {
   error: null,
 }
 
+const normalizeProduct = (product: Record<string, unknown>): Product => {
+  const actualMrp = Number(product.actualMrp ?? product.mrp ?? product.price ?? 0)
+  const sellingPrice = Number(product.sellingPrice ?? product.price ?? actualMrp ?? 0)
+  const discount = Number(
+    product.discount ??
+      (actualMrp > 0 && sellingPrice > 0 ? calculateDiscount(actualMrp, sellingPrice) : 0),
+  )
+
+  return {
+    ...(product as Product),
+    _id: String(product._id || product.id || ''),
+    title: String(product.title || 'Product'),
+    price: sellingPrice,
+    actualMrp: actualMrp || sellingPrice,
+    sellingPrice,
+    discount,
+  }
+}
+
 export const fetchProducts = createAsyncThunk('products/fetch', async () => {
   const res = await getProducts()
-  // Expect server to return array of products
-  return res
+  return Array.isArray(res) ? res.map((product) => normalizeProduct(product as Record<string, unknown>)) : []
 })
 
 const productsSlice = createSlice({

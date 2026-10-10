@@ -99,22 +99,172 @@
 }
 
 .admin-product-form input,
-.admin-product-form textarea {
+.admin-product-form textarea,
+.admin-product-form select {
   width: 100%;
   border: 1px solid #d5d9e0;
   border-radius: 10px;
   padding: 12px 14px;
   font: inherit;
   color: #171414;
+  background: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.admin-product-form input:focus,
+.admin-product-form textarea:focus,
+.admin-product-form select:focus,
+.admin-product-form .admin-product-form-control:focus {
+  outline: none;
+  border-color: #2874f0;
+  box-shadow: 0 0 0 3px rgba(40, 116, 240, 0.12);
+  background: #fff;
+}
+
+.admin-product-form select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #6b7280 50%), linear-gradient(135deg, #6b7280 50%, transparent 50%);
+  background-position: calc(100% - 18px) calc(50% - 2px), calc(100% - 12px) calc(50% - 2px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 36px;
+}
+
+.coupon-product-dropdown-wrap {
+  position: relative;
+}
+
+.coupon-product-dropdown {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid #d5d9e0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font: inherit;
+  color: #171414;
+  text-align: left;
+  cursor: pointer;
+}
+
+.coupon-product-dropdown.open {
+  border-color: #2874f0;
+  box-shadow: 0 0 0 3px rgba(40, 116, 240, 0.12);
+}
+
+.coupon-dropdown-caret {
+  color: #6b7280;
+  font-size: 18px;
+}
+
+.coupon-product-dropdown-menu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  background: #fff;
+  border: 1px solid #d5d9e0;
+  border-radius: 10px;
+  box-shadow: 0 12px 24px rgba(18, 24, 38, 0.1);
+  max-height: 260px;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.coupon-product-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: none;
+  background: transparent;
+  padding: 12px 14px;
+  font: inherit;
+  text-align: left;
+  color: #171414;
+  cursor: pointer;
+}
+
+.coupon-product-option:hover {
+  background: #f7f8fa;
+}
+
+.coupon-product-option.selected {
+  background: #edf4ff;
+  color: #1c4fa0;
+}
+
+.coupon-option-check {
+  font-weight: 800;
+  color: #2874f0;
+}
+
+.coupon-selected-products {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.coupon-selected-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid #d5d9e0;
+  border-radius: 999px;
+  background: #fff;
+  color: #171414;
+  font: inherit;
+  cursor: pointer;
+}
+
+.coupon-selected-pill span {
+  color: #6b7280;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.admin-form-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.admin-form-preview-item {
+  position: relative;
 }
 
 .admin-form-preview {
-  width: min(220px, 100%);
+  width: 100%;
   max-height: 220px;
   object-fit: contain;
   border: 1px solid #eee;
   border-radius: 8px;
   background: #fafafa;
+}
+
+.admin-preview-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .admin-product-form input[type="file"] {
@@ -163,6 +313,40 @@
   border: 1px solid #e0e0e0;
   border-radius: 10px;
   padding: 12px;
+}
+
+.coupon-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  min-height: 92px;
+  padding: 18px 16px;
+}
+
+.coupon-card .admin-product-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.coupon-card .admin-product-meta h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.coupon-card .admin-product-meta p,
+.coupon-card .coupon-product-label {
+  font-size: 13px;
+  color: #6d6663;
+  margin: 0;
+}
+
+.coupon-card strong {
+  font-size: 17px;
+  color: #171414;
 }
 
 .admin-product-card img {

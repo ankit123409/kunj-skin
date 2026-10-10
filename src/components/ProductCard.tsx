@@ -1,4 +1,5 @@
 import './ProductCard.css'
+import { useEffect, useMemo, useState } from 'react'
 import type { Product } from '../store/cartSlice'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { addToCart, decrement } from '../store/cartSlice'
@@ -6,10 +7,28 @@ import { toggleFavorite } from '../store/favoritesSlice'
 import { openCart } from '../store/uiSlice'
 import { navigate } from '../router'
 
-
 export default function ProductCard({ product }: { product: Product }) {
   const dispatch = useAppDispatch()
-console.log("product1111",product);
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
+
+  const galleryImages = useMemo(() => {
+    const images = product.images?.length
+      ? product.images.filter(Boolean)
+      : [product.image || product.img || '/fallback.png']
+
+    return images.length ? images : ['/fallback.png']
+  }, [product.images, product.image, product.img])
+
+  useEffect(() => {
+    if (galleryImages.length <= 1) return
+
+    const timer = window.setInterval(() => {
+      setActiveImageIndex((prev) => (prev + 1) % galleryImages.length)
+    }, 2500)
+
+    return () => window.clearInterval(timer)
+  }, [galleryImages.length])
+
   const quantity = useAppSelector(
     (state) => state.cart.items.find((item) => item._id === product._id)?.quantity ?? 0
   )
@@ -19,8 +38,6 @@ console.log("product1111",product);
 
   const mrp = Math.round(product.price * 1.25)
   const discount = Math.round(((mrp - product.price) / mrp) * 100)
-  // console.log("product",product);
-  
 
   return (
     <article className="product-card">
@@ -49,11 +66,30 @@ console.log("product1111",product);
 
         {/* Product image */}
         <div className="product-image-wrap">
-          <img
-            src={product.image || product.img || '/fallback.png'}
-            alt={product.title}
-            className="product-image"
-          />
+          <div className="product-gallery" aria-label={`${product.title} product images`}>
+            <img
+              src={galleryImages[activeImageIndex] || '/fallback.png'}
+              alt={product.title}
+              className="product-image"
+            />
+
+            {galleryImages.length > 1 && (
+              <div className="product-slider-dots" aria-label="Product image navigation">
+                {galleryImages.map((_, index) => (
+                  <button
+                    key={`${product._id}-dot-${index}`}
+                    type="button"
+                    className={`product-slider-dot ${index === activeImageIndex ? 'active' : ''}`}
+                    aria-label={`View image ${index + 1}`}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setActiveImageIndex(index)
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

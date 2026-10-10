@@ -5,12 +5,12 @@ import elem2 from '../assets/elem2.png'
 import elem3 from '../assets/elem3..png'
 
 const slides = [
-  temp,
-  elem2,
-  elem3,
-  // 'https://res.cloudinary.com/yllqkbrj/image/upload/v1790710271/ChatGPT_Image_Sep_30_2026_12_58_44_AM.png',
-  // 'https://res.cloudinary.com/yllqkbrj/image/upload/v1790710271/ChatGPT_Image_Sep_30_2026_12_56_07_AM.png',
-  // 'https://res.cloudinary.com/yllqkbrj/image/upload/v1790710271/ChatGPT_Image_Sep_30_2026_01_00_12_AM.png',
+  // temp,
+  // elem2,
+  // elem3,
+  'https://res.cloudinary.com/yllqkbrj/image/upload/v1790710271/ChatGPT_Image_Sep_30_2026_12_58_44_AM.png',
+  'https://res.cloudinary.com/yllqkbrj/image/upload/v1790710271/ChatGPT_Image_Sep_30_2026_12_56_07_AM.png',
+  'https://res.cloudinary.com/yllqkbrj/image/upload/v1790710271/ChatGPT_Image_Sep_30_2026_01_00_12_AM.png',
 ]
 
 export default function AdBannerCarousel() {

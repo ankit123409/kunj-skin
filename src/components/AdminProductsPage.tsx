@@ -3,6 +3,7 @@ import './AdminProductsPage.css'
 import fallbackImage from '../assets/p1.png'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import {
+  calculateDiscount,
   createProductApi,
   deleteProductApi,
   getAuthToken,
@@ -17,10 +18,13 @@ import type { Product } from '../store/cartSlice'
 
 const emptyForm = (): ProductPayload => ({
   image: '',
+  images: [],
   video: '',
   title: '',
   size: '',
-  price: 0,
+  actualMrp: 0,
+  sellingPrice: 0,
+  discount: 0,
   description: '',
 })
 
@@ -48,8 +52,8 @@ export default function AdminProductsPage() {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [showForm, setShowForm] = useState(false)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [previewUrl, setPreviewUrl] = useState('')
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [previewUrls, setPreviewUrls] = useState<string[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -58,14 +62,18 @@ export default function AdminProductsPage() {
 
   useEffect(() => {
     return () => {
-      if (previewUrl.startsWith('blob:')) URL.revokeObjectURL(previewUrl)
+      previewUrls.forEach((url) => {
+        if (url.startsWith('blob:')) URL.revokeObjectURL(url)
+      })
     }
-  }, [previewUrl])
+  }, [previewUrls])
 
   const resetImagePicker = () => {
-    if (previewUrl.startsWith('blob:')) URL.revokeObjectURL(previewUrl)
-    setSelectedFile(null)
-    setPreviewUrl('')
+    previewUrls.forEach((url) => {
+      if (url.startsWith('blob:')) URL.revokeObjectURL(url)
+    })
+    setSelectedFiles([])
+    setPreviewUrls([])
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
@@ -90,18 +98,27 @@ export default function AdminProductsPage() {
   }
 
   const openEdit = (product: Product) => {
+    const actualMrp = Number(product.actualMrp ?? product.price ?? 0)
+    const sellingPrice = Number(product.sellingPrice ?? product.price ?? actualMrp ?? 0)
+    const discount = Number(product.discount ?? calculateDiscount(actualMrp, sellingPrice))
+
     setEditingId(getProductId(product))
     setForm({
       image: product.image || product.img || '',
+      images: product.images?.length ? product.images : product.image || product.img ? [product.image || product.img || ''] : [],
       video: product.video || '',
       title: product.title || '',
       size: product.size || '',
-      price: Number(product.price || 0),
+      actualMrp,
+      sellingPrice,
+      discount,
       description: product.description || '',
     })
-    if (previewUrl.startsWith('blob:')) URL.revokeObjectURL(previewUrl)
-    setSelectedFile(null)
-    setPreviewUrl(product.image || product.img || '')
+    previewUrls.forEach((url) => {
+      if (url.startsWith('blob:')) URL.revokeObjectURL(url)
+    })
+    setSelectedFiles([])
+    setPreviewUrls(product.images?.length ? product.images : product.image || product.img ? [product.image || product.img || ''] : [])
     if (fileInputRef.current) fileInputRef.current.value = ''
     setShowForm(true)
     setError('')
@@ -109,33 +126,68 @@ export default function AdminProductsPage() {
   }
 
   const handleImageSelect = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
+    const files = Array.from(event.target.files || [])
+    if (!files.length) return
 
-    if (!file.type.startsWith('image/')) {
-      setError('Please select an image file')
+    const validFiles = files.filter((file) => file.type.startsWith('image/'))
+    if (validFiles.length !== files.length) {
+      setError('Please select only image files')
       return
     }
 
-    if (previewUrl.startsWith('blob:')) URL.revokeObjectURL(previewUrl)
-    setSelectedFile(file)
-    setPreviewUrl(URL.createObjectURL(file))
+    previewUrls.forEach((url) => {
+      if (url.startsWith('blob:')) URL.revokeObjectURL(url)
+    })
+
+    const newPreviewUrls = validFiles.map((file) => URL.createObjectURL(file))
+    setSelectedFiles(validFiles)
+    setPreviewUrls(newPreviewUrls)
     setError('')
   }
 
+  const removeSelectedImage = (index: number) => {
+    const nextSelectedFiles = selectedFiles.filter((_, i) => i !== index)
+    const nextPreviewUrls = previewUrls.filter((_, i) => i !== index)
+
+    if (previewUrls[index]?.startsWith('blob:')) URL.revokeObjectURL(previewUrls[index])
+
+    setSelectedFiles(nextSelectedFiles)
+    setPreviewUrls(nextPreviewUrls)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const handleFormNumberChange = (field: 'actualMrp' | 'sellingPrice', value: string) => {
+    const numericValue = Number(value || 0)
+    setForm((current) => {
+      const nextActualMrp = field === 'actualMrp' ? numericValue : Number(current.actualMrp || 0)
+      const nextSellingPrice = field === 'sellingPrice' ? numericValue : Number(current.sellingPrice || 0)
+
+      return {
+        ...current,
+        [field]: numericValue,
+        discount: calculateDiscount(nextActualMrp, nextSellingPrice),
+      }
+    })
+  }
+
   const handleSave = async () => {
-    if (!form.title.trim() || !form.size.trim() || !form.description.trim() || !form.price) {
-      setError('Fill in title, size, price and description')
+    if (!form.title.trim() || !form.size.trim() || !form.description.trim() || !form.sellingPrice) {
+      setError('Fill in title, size, selling price and description')
       return
     }
 
-    if (!editingId && !selectedFile) {
-      setError('Please select a product image')
+    if (!form.actualMrp || form.actualMrp < form.sellingPrice) {
+      setError('Actual MRP should be greater than or equal to the selling price')
       return
     }
 
-    if (editingId && !selectedFile && !form.image.trim()) {
-      setError('Please select a product image')
+    if (!editingId && !selectedFiles.length) {
+      setError('Please select at least one product image')
+      return
+    }
+
+    if (editingId && !selectedFiles.length && !form.image.trim() && (!form.images || form.images.length === 0)) {
+      setError('Please select at least one product image')
       return
     }
 
@@ -151,24 +203,26 @@ export default function AdminProductsPage() {
     let step: 'cloudinary' | 'product' = 'product'
 
     try {
-      let imageUrl = form.image.trim()
+      let uploadedImageUrls: string[] = form.images?.filter(Boolean) ?? []
 
-      if (selectedFile) {
+      if (selectedFiles.length > 0) {
         step = 'cloudinary'
         setUploadStep('cloudinary')
-        imageUrl = await uploadImageToCloudinary(selectedFile)
+        uploadedImageUrls = await Promise.all(selectedFiles.map((file) => uploadImageToCloudinary(file)))
       }
 
-      if (!imageUrl) {
+      if (uploadedImageUrls.length === 0) {
         throw new Error('Image upload did not return a URL')
       }
 
       const payload: ProductPayload = {
-        image: imageUrl,
+        images: uploadedImageUrls,
         video: form.video.trim(),
         title: form.title.trim(),
         size: form.size.trim(),
-        price: Number(form.price),
+        actualMrp: Number(form.actualMrp || 0),
+        sellingPrice: Number(form.sellingPrice || 0),
+        discount: Number(form.discount || calculateDiscount(form.actualMrp, form.sellingPrice)),
         description: form.description.trim(),
       }
 
@@ -265,25 +319,40 @@ export default function AdminProductsPage() {
               </button>
             </div>
 
-            <label htmlFor="product-image">Product image *</label>
+            <label htmlFor="product-image">Product images *</label>
             <input
               id="product-image"
               ref={fileInputRef}
               type="file"
               accept="image/*"
+              multiple
               disabled={saving}
               onChange={handleImageSelect}
             />
             <p className="admin-file-hint">
-              {selectedFile
-                ? selectedFile.name
+              {selectedFiles.length > 0
+                ? `${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''} selected`
                 : editingId
-                  ? 'Choose a new image to replace the current one, or keep the existing image.'
-                  : 'Select an image from your computer or phone.'}
+                  ? 'Choose one or more new images to replace the current image set, or keep the existing ones.'
+                  : 'Select one or more images from your computer or phone.'}
             </p>
 
-            {previewUrl ? (
-              <img className="admin-form-preview" src={previewUrl} alt="Product preview" />
+            {previewUrls.length > 0 ? (
+              <div className="admin-form-preview-grid">
+                {previewUrls.map((url, index) => (
+                  <div key={`${url}-${index}`} className="admin-form-preview-item">
+                    <button
+                      type="button"
+                      className="admin-preview-remove"
+                      aria-label={`Remove image ${index + 1}`}
+                      onClick={() => removeSelectedImage(index)}
+                    >
+                      ×
+                    </button>
+                    <img className="admin-form-preview" src={url} alt={`Product preview ${index + 1}`} />
+                  </div>
+                ))}
+              </div>
             ) : null}
 
             <label>Video URL</label>
@@ -310,13 +379,32 @@ export default function AdminProductsPage() {
               onChange={(e) => setForm({ ...form, size: e.target.value })}
             />
 
-            <label>Price *</label>
+            <label>Actual MRP *</label>
             <input
               type="number"
               min="0"
-              value={form.price || ''}
-              placeholder="799"
-              onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
+              value={form.actualMrp || ''}
+              placeholder="1299"
+              onChange={(e) => handleFormNumberChange('actualMrp', e.target.value)}
+            />
+
+            <label>Selling Price *</label>
+            <input
+              type="number"
+              min="0"
+              value={form.sellingPrice || ''}
+              placeholder="999"
+              onChange={(e) => handleFormNumberChange('sellingPrice', e.target.value)}
+            />
+
+            <label>Discount</label>
+            <input
+              type="number"
+              min="0"
+              max="100"
+              value={form.discount || ''}
+              readOnly
+              placeholder="23"
             />
 
             <label>Description *</label>

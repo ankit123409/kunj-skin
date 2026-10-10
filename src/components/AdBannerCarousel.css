@@ -1,47 +1,47 @@
 .ads-carousel {
-  width: 100%;
-  max-width: 100%;
-  margin: 0 0 18px;
-  background: linear-gradient(180deg, #f9f4f1 0%, #f6ece8 100%);
-  border-bottom: 1px solid rgba(117, 88, 76, 0.12);
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-bottom: 18px;
+  background: #000;
   overflow: hidden;
+  position: relative;
 }
 
 .ads-carousel__inner {
   width: 100%;
+  /* height: clamp(600px, 92vh, 1020px); */
   max-width: 100%;
   overflow: hidden;
-  background: linear-gradient(180deg, #f9f4f1 0%, #f6ece8 100%);
+  background: #000;
 }
 
 .ads-banner-image {
   display: block;
   width: 100%;
-  max-width: 100%;
-  height: clamp(220px, 26vw, 420px);
+  height: 100%;
   object-fit: cover;
   object-position: center;
-  background: #f9f4f1;
+  background: #000;
 }
 
 @media (max-width: 768px) {
+  .ads-carousel {
+    margin-bottom: 14px;
+  }
+
+  .ads-carousel__inner,
   .ads-banner-image {
-    height: auto;
-    min-height: 180px;
-    aspect-ratio: 16 / 8;
-    object-fit: contain;
-    object-position: center;
+    height: clamp(300px, 56vh, 560px);
   }
 }
 
 @media (max-width: 480px) {
   .ads-carousel {
-    margin-bottom: 14px;
+    margin-bottom: 12px;
   }
 
+  .ads-carousel__inner,
   .ads-banner-image {
-    min-height: 150px;
-    aspect-ratio: 16 / 9;
-    object-fit: contain;
+    height: clamp(240px, 42vh, 360px);
   }
 }

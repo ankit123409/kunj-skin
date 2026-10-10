@@ -37,6 +37,14 @@ const PAYMENT_TYPE_MAP = {
 type PaymentMethod = keyof typeof PAYMENT_TYPE_MAP
 type AddressView = 'list' | 'form' | 'payment'
 
+const indianStates = [
+  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat', 'Haryana',
+  'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya',
+  'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',
+  'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu',
+  'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry'
+]
+
 const emptyAddressForm = (phone = '') => ({
   fullName: '',
   phone,
@@ -79,15 +87,17 @@ export default function ProfileModal() {
   const [regEmail, setRegEmail] = useState('')
   const [regMobile, setRegMobile] = useState('')
   const [regPassword, setRegPassword] = useState('')
+  const [showRegPassword, setShowRegPassword] = useState(false)
   const [loginMobile, setLoginMobile] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
+  const [showLoginPassword, setShowLoginPassword] = useState(false)
   const [error, setError] = useState('')
   const [authSuccess, setAuthSuccess] = useState(false)
   const [authMessage, setAuthMessage] = useState('')
   const [showSuccess, setShowSuccess] = useState(false)
   const [orderMessage, setOrderMessage] = useState('Order created successfully')
   const [checkoutForm, setCheckoutForm] = useState(emptyAddressForm(mobile || ''))
-  const [tab, setTab] = useState<'orders' | 'account' | 'checkout' | 'products'>('account')
+  const [tab, setTab] = useState<'orders' | 'account' | 'checkout' | 'products' | 'coupons'>('account')
 
   const [addressView, setAddressView] = useState<AddressView>('list')
   const [addresses, setAddresses] = useState<SavedAddress[]>([])
@@ -586,6 +596,19 @@ export default function ProfileModal() {
       }
     }
 
+    const storedCouponCode = typeof window !== 'undefined'
+      ? (() => {
+          const raw = window.localStorage.getItem('kunj-skin-applied-coupon')
+          if (!raw) return ''
+          try {
+            const parsed = JSON.parse(raw) as { code?: string }
+            return parsed?.code || ''
+          } catch {
+            return ''
+          }
+        })()
+      : ''
+
     setError('')
     setPlacingOrder(true)
 
@@ -595,6 +618,7 @@ export default function ProfileModal() {
           items: validItems,
           paymentType,
           address: orderAddress,
+          couponCode: storedCouponCode || undefined,
         },
         token,
       )
@@ -694,7 +718,34 @@ export default function ProfileModal() {
                 <input type="tel" value={regMobile} maxLength={10} placeholder="10-digit mobile" onChange={(e) => setRegMobile(e.target.value)} />
 
                 <label className="field-label">Password</label>
-                <input type="password" value={regPassword} placeholder="Password" onChange={(e) => setRegPassword(e.target.value)} />
+                <div className="password-field">
+                  <input
+                    type={showRegPassword ? 'text' : 'password'}
+                    value={regPassword}
+                    placeholder="Password"
+                    onChange={(e) => setRegPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    aria-label={showRegPassword ? 'Hide password' : 'Show password'}
+                    onClick={() => setShowRegPassword((prev) => !prev)}
+                  >
+                    {showRegPassword ? (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    ) : (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M3 3l18 18" />
+                        <path d="M10.58 10.58A2 2 0 0 0 13.42 13.42" />
+                        <path d="M9.88 5.35A10.94 10.94 0 0 1 12 5c6.5 0 10 7 10 7a17.44 17.44 0 0 1-4.23 5.08" />
+                        <path d="M6.61 6.61A17.78 17.78 0 0 0 2 12s3.5 7 10 7a11.59 11.59 0 0 0 5.39-1.61" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
 
                 <button className="primary-button" type="button" onClick={handleRegister}>Register</button>
               </>
@@ -704,7 +755,34 @@ export default function ProfileModal() {
                 <input type="tel" value={loginMobile} maxLength={10} placeholder="10-digit mobile" onChange={(e) => setLoginMobile(e.target.value)} />
 
                 <label className="field-label">Password</label>
-                <input type="password" value={loginPassword} placeholder="Password" onChange={(e) => setLoginPassword(e.target.value)} />
+                <div className="password-field">
+                  <input
+                    type={showLoginPassword ? 'text' : 'password'}
+                    value={loginPassword}
+                    placeholder="Password"
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    aria-label={showLoginPassword ? 'Hide password' : 'Show password'}
+                    onClick={() => setShowLoginPassword((prev) => !prev)}
+                  >
+                    {showLoginPassword ? (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    ) : (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M3 3l18 18" />
+                        <path d="M10.58 10.58A2 2 0 0 0 13.42 13.42" />
+                        <path d="M9.88 5.35A10.94 10.94 0 0 1 12 5c6.5 0 10 7 10 7a17.44 17.44 0 0 1-4.23 5.08" />
+                        <path d="M6.61 6.61A17.78 17.78 0 0 0 2 12s3.5 7 10 7a11.59 11.59 0 0 0 5.39-1.61" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
 
                 <button className="primary-button" type="button" onClick={handleLogin}>Login</button>
               </>
@@ -848,10 +926,16 @@ export default function ProfileModal() {
                 <label className="field-heading">State <span>*</span></label>
                 <input
                   type="text"
+                  list="india-state-list"
                   value={checkoutForm.state}
-                  placeholder="State"
+                  placeholder="Search state"
                   onChange={(e) => setCheckoutForm({ ...checkoutForm, state: e.target.value })}
                 />
+                <datalist id="india-state-list">
+                  {indianStates.map((stateName) => (
+                    <option key={stateName} value={stateName} />
+                  ))}
+                </datalist>
 
                 <label className="field-heading">Pincode <span>*</span></label>
                 <input
@@ -983,16 +1067,29 @@ export default function ProfileModal() {
                 My Orders
               </button>
               {isAdminRole(role) && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    dispatch(closeProfile())
-                    dispatch(finishCheckout())
-                    navigate('/admin/products')
-                  }}
-                >
-                  Products
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      dispatch(closeProfile())
+                      dispatch(finishCheckout())
+                      navigate('/admin/products')
+                    }}
+                  >
+                    Products
+                  </button>
+                  <button
+                    type="button"
+                    className={tab === 'coupons' ? 'active-tab' : ''}
+                    onClick={() => {
+                      dispatch(closeProfile())
+                      dispatch(finishCheckout())
+                      navigate('/admin/coupons')
+                    }}
+                  >
+                    Coupons
+                  </button>
+                </>
               )}
             </div>
 
@@ -1076,10 +1173,16 @@ export default function ProfileModal() {
                     <label className="field-heading">State <span>*</span></label>
                     <input
                       type="text"
+                      list="india-state-list"
                       value={checkoutForm.state}
-                      placeholder="State"
+                      placeholder="Search state"
                       onChange={(e) => setCheckoutForm({ ...checkoutForm, state: e.target.value })}
                     />
+                    <datalist id="india-state-list">
+                      {indianStates.map((stateName) => (
+                        <option key={stateName} value={stateName} />
+                      ))}
+                    </datalist>
 
                     <label className="field-heading">Pincode <span>*</span></label>
                     <input

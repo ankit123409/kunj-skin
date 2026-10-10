@@ -37,13 +37,13 @@ export default function Footer() {
           </ul>
         </div>
 
-        <div className="footer-col footer-newsletter">
-          <h3>Sign Up For Updates</h3>
+        {/* <div className="footer-col footer-newsletter"> */}
+          {/* <h3>Sign Up For Updates</h3>
 
           <div className="subscribe-box">
             <input type="email" placeholder="Enter Your Email" aria-label="Email" />
             <button type="button">Subscribe</button>
-          </div>
+          </div> */}
 
           <div className="social-wrap">
             <h4>Follow Us</h4>
@@ -53,7 +53,7 @@ export default function Footer() {
               <button className="social-btn" aria-label="YouTube">▶</button>
             </div>
           </div>
-        </div>
+        {/* </div> */}
       </div>
 
       <div className="footer-bottom">

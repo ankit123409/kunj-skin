@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import './OrdersPage.css'
 import fallbackImage from '../assets/p1.png'
 import { useAppSelector } from '../hooks'
-import { getAdminOrdersApi, getMyOrdersApi } from '../api/api'
+import { bulkUpdateAdminOrderStatusApi, getAdminOrdersApi, getMyOrdersApi } from '../api/api'
 import { navigate } from '../router'
 import OrderStatusSelect from './OrderStatusSelect'
 import { isAdminRole, normalizeOrderStatus, ORDER_STATUSES, statusHint, statusLabel, statusTone } from '../utils/orderStatus'
@@ -27,6 +27,7 @@ type OrderRow = {
   status: string
   customerName?: string
   customerMobile?: string
+  paymentMethod?: string
   items: OrderProduct[]
 }
 
@@ -80,11 +81,37 @@ function orderDateKey(value: string) {
   return `${date.getFullYear()}-${month}-${day}`
 }
 
+function normalizePaymentMethod(value: unknown): string {
+  if (typeof value === 'number') {
+    if (value === 1) return 'cash'
+    if (value === 2) return 'card'
+    if (value === 3) return 'upi'
+    return 'all'
+  }
+
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase()
+    if (!normalized) return 'all'
+    if (normalized.includes('cash')) return 'cash'
+    if (normalized.includes('card')) return 'card'
+    if (normalized.includes('upi')) return 'upi'
+    return normalized
+  }
+
+  if (value && typeof value === 'object') {
+    const record = asRecord(value)
+    return normalizePaymentMethod(record?.type ?? record?.method ?? record?.paymentType ?? record?.paymentMethod)
+  }
+
+  return 'all'
+}
+
 function normalizeOrder(raw: unknown, index: number): OrderRow {
   const order = asRecord(raw) ?? {}
   const items = Array.isArray(order.items) ? order.items.map((item, itemIndex) => normalizeItem(item, itemIndex)) : []
   const user = asRecord(order.user) ?? asRecord(order.customer)
   const address = asRecord(order.address)
+  const paymentMethod = normalizePaymentMethod(order.paymentType ?? order.paymentMethod ?? order.payment ?? order.method)
 
   return {
     id: String(order._id || order.id || `order-${index}`),
@@ -95,6 +122,7 @@ function normalizeOrder(raw: unknown, index: number): OrderRow {
     status: String(order.status || 'pending'),
     customerName: String(user?.name || address?.name || ''),
     customerMobile: String(user?.mobile || address?.mobile || ''),
+    paymentMethod,
     items,
   }
 }
@@ -108,9 +136,12 @@ export default function OrdersPage() {
   const [query, setQuery] = useState('')
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [paymentFilter, setPaymentFilter] = useState('all')
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
   const [productFilter, setProductFilter] = useState('all')
+  const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]) 
+  const [bulkStatus, setBulkStatus] = useState('shipped')
 
   useEffect(() => {
     const token = typeof window !== 'undefined' ? window.localStorage.getItem('kunj-skin-token') : null
@@ -155,12 +186,19 @@ export default function OrdersPage() {
     return Array.from(titles).sort((a, b) => a.localeCompare(b))
   }, [orders])
 
-  const filtersActive = statusFilter !== 'all' || Boolean(fromDate) || Boolean(toDate) || productFilter !== 'all'
+  const filtersActive =
+    statusFilter !== 'all' ||
+    paymentFilter !== 'all' ||
+    Boolean(fromDate) ||
+    Boolean(toDate) ||
+    productFilter !== 'all'
 
   const visibleOrders = useMemo(() => {
     const term = search.trim().toLowerCase()
     return orders.filter((order) => {
       if (isAdmin && statusFilter !== 'all' && normalizeOrderStatus(order.status) !== statusFilter) return false
+
+      if (isAdmin && paymentFilter !== 'all' && order.paymentMethod !== paymentFilter) return false
 
       if (isAdmin && (fromDate || toDate)) {
         const placed = orderDateKey(order.createdAt)
@@ -181,16 +219,54 @@ export default function OrdersPage() {
       const customer = `${order.customerName || ''} ${order.customerMobile || ''}`.toLowerCase()
       return id.includes(term) || status.includes(term) || titles.includes(term) || customer.includes(term)
     })
-  }, [orders, search, isAdmin, statusFilter, fromDate, toDate, productFilter])
+  }, [orders, search, isAdmin, statusFilter, paymentFilter, fromDate, toDate, productFilter])
 
   const handleSearch = (event: FormEvent) => {
     event.preventDefault()
     setSearch(query)
   }
 
+  const toggleOrderSelection = (orderId: string) => {
+    setSelectedOrderIds((current) =>
+      current.includes(orderId)
+        ? current.filter((id) => id !== orderId)
+        : [...current, orderId],
+    )
+  }
+
+  const handleBulkStatusUpdate = async () => {
+    if (!selectedOrderIds.length) return
+
+    const token = typeof window !== 'undefined' ? window.localStorage.getItem('kunj-skin-token') : null
+    try {
+      await bulkUpdateAdminOrderStatusApi(selectedOrderIds, bulkStatus, token || undefined)
+      setOrders((current) =>
+        current.map((order) => {
+          const orderId = String(order._id || order.id || '')
+          return selectedOrderIds.includes(orderId) ? { ...order, status: bulkStatus } : order
+        }),
+      )
+      setSelectedOrderIds([])
+    } catch (error) {
+      console.error('Bulk order status update failed', error)
+    }
+  }
+
+  const allVisibleSelected =
+    visibleOrders.length > 0 && visibleOrders.every((order) => {
+      const orderId = String(order._id || order.id || '')
+      return selectedOrderIds.includes(orderId)
+    })
+
   return (
     <main className="orders-page">
       <div className="orders-page-container">
+        <div className="orders-toolbar">
+          <button type="button" className="orders-back-button" onClick={() => navigate('/')}>
+            ← Back
+          </button>
+        </div>
+
         <form className="orders-search" onSubmit={handleSearch}>
           <input
             type="search"
@@ -209,52 +285,104 @@ export default function OrdersPage() {
         </form>
 
         {isAdmin && (
-          <div className="orders-filters">
-            <label>
-              Status
-              <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-                <option value="all">All statuses</option>
-                {ORDER_STATUSES.map((status) => (
+          <>
+            <div className="orders-filters">
+              <label>
+                Status
+                <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+                  <option value="all">All statuses</option>
+                  {ORDER_STATUSES.map((status) => (
+                    <option key={status} value={status}>
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                From
+                <input type="date" value={fromDate} max={toDate || undefined} onChange={(event) => setFromDate(event.target.value)} />
+              </label>
+              <label>
+                To
+                <input type="date" value={toDate} min={fromDate || undefined} onChange={(event) => setToDate(event.target.value)} />
+              </label>
+              <label>
+                Payment mode
+                <select value={paymentFilter} onChange={(event) => setPaymentFilter(event.target.value)}>
+                  <option value="all">All modes</option>
+                  <option value="cash">Cash</option>
+                  <option value="card">Card</option>
+                  <option value="upi">UPI</option>
+                </select>
+              </label>
+              <label>
+                Product
+                <select value={productFilter} onChange={(event) => setProductFilter(event.target.value)}>
+                  <option value="all">All products</option>
+                  {productOptions.map((title) => (
+                    <option key={title} value={title}>
+                      {title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {filtersActive && (
+                <button
+                  type="button"
+                  className="orders-filter-clear"
+                  onClick={() => {
+                    setStatusFilter('all')
+                    setPaymentFilter('all')
+                    setFromDate('')
+                    setToDate('')
+                    setProductFilter('all')
+                  }}
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            <div className="orders-bulk-actions">
+              <label className="orders-select-all">
+                <input
+                  type="checkbox"
+                  checked={allVisibleSelected}
+                  onChange={() => {
+                    const visibleIds = visibleOrders.map((order) => String(order._id || order.id || ''))
+                    const ids = visibleIds.filter(Boolean)
+                    setSelectedOrderIds((current) => {
+                      const next = new Set(current)
+                      if (allVisibleSelected) {
+                        ids.forEach((id) => next.delete(id))
+                      } else {
+                        ids.forEach((id) => next.add(id))
+                      }
+                      return Array.from(next)
+                    })
+                  }}
+                />
+                Select all visible
+              </label>
+
+              <select value={bulkStatus} onChange={(event) => setBulkStatus(event.target.value)}>
+                {ORDER_STATUSES.filter((status) => status !== 'pending').map((status) => (
                   <option key={status} value={status}>
                     {status.charAt(0).toUpperCase() + status.slice(1)}
                   </option>
                 ))}
               </select>
-            </label>
-            <label>
-              From
-              <input type="date" value={fromDate} max={toDate || undefined} onChange={(event) => setFromDate(event.target.value)} />
-            </label>
-            <label>
-              To
-              <input type="date" value={toDate} min={fromDate || undefined} onChange={(event) => setToDate(event.target.value)} />
-            </label>
-            <label>
-              Product
-              <select value={productFilter} onChange={(event) => setProductFilter(event.target.value)}>
-                <option value="all">All products</option>
-                {productOptions.map((title) => (
-                  <option key={title} value={title}>
-                    {title}
-                  </option>
-                ))}
-              </select>
-            </label>
-            {filtersActive && (
+
               <button
                 type="button"
-                className="orders-filter-clear"
-                onClick={() => {
-                  setStatusFilter('all')
-                  setFromDate('')
-                  setToDate('')
-                  setProductFilter('all')
-                }}
+                className="orders-bulk-update"
+                disabled={selectedOrderIds.length === 0}
+                onClick={handleBulkStatusUpdate}
               >
-                Clear
+                Update selected {selectedOrderIds.length ? `(${selectedOrderIds.length})` : ''}
               </button>
-            )}
-          </div>
+            </div>
+          </>
         )}
 
         {loading && orders.length === 0 ? (
@@ -298,6 +426,17 @@ export default function OrdersPage() {
                     if (event.key === 'Enter' || event.key === ' ') navigate(`/order/${orderId}`)
                   }}
                 >
+                  {isAdmin && (
+                    <div className="order-select-wrap" onClick={(event) => event.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={selectedOrderIds.includes(orderId)}
+                        onChange={() => toggleOrderSelection(orderId)}
+                        aria-label={`Select order ${orderId}`}
+                      />
+                    </div>
+                  )}
+
                   <div className="order-thumb-wrap">
                     <img
                       src={firstItem?.image || firstItem?.img || fallbackImage}

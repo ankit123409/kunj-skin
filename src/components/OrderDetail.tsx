@@ -54,6 +54,13 @@ type OrderRecord = {
   status?: string
   createdAt?: string
   total?: number
+  subtotal?: number
+  shippingAmount?: number
+  taxAmount?: number
+  discountAmount?: number
+  discountPercentage?: number
+  couponCode?: string
+  couponId?: string
   totalAmount?: number
   items: OrderProduct[]
   address?: {
@@ -195,8 +202,13 @@ console.log("orderData?.items ",orderData?.items );
   //   [items]
   // )
   const itemCount = items.reduce((sum, item) => sum + Number(item.quantity || 1), 0)
-  // const shipping = subtotal > 799 ? 0 : 49
-  const total = orderData?.totalAmount ?? orderData?.total ?? 0
+  const subtotalValue = Number(orderData?.subtotal ?? items.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 1), 0))
+  const discountAmount = Number(orderData?.discountAmount ?? 0)
+  const shippingAmount = Number(orderData?.shippingAmount ?? 0)
+  const taxAmount = Number(orderData?.taxAmount ?? 0)
+  const total = orderData?.totalAmount ?? orderData?.total ?? Math.max(subtotalValue - discountAmount + shippingAmount + taxAmount, 0)
+  const discountPercentage = Number(orderData?.discountPercentage ?? 0)
+  const couponCode = orderData?.couponCode || 'NO COUPON'
   const address = orderData?.address ?? {}
 
   return (
@@ -288,13 +300,31 @@ console.log("orderData?.items ",orderData?.items );
 
                 <div className="order-summary-box">
                   <div className="order-summary-row">
-                    <span>{itemCount} items</span>
-                    <strong>₹{total}</strong>
+                    <span>Coupon</span>
+                    <strong>{couponCode}</strong>
                   </div>
                   <div className="order-summary-row">
-                    <span>Discount</span>
-                    <strong>₹0</strong>
+                    <span>{itemCount} items</span>
+                    <strong>₹{subtotalValue}</strong>
                   </div>
+                  {discountAmount > 0 ? (
+                    <div className="order-summary-row">
+                      <span>Discount {discountPercentage ? `(${discountPercentage}%)` : ''}</span>
+                      <strong>-₹{discountAmount}</strong>
+                    </div>
+                  ) : null}
+                  {shippingAmount > 0 ? (
+                    <div className="order-summary-row">
+                      <span>Shipping</span>
+                      <strong>₹{shippingAmount}</strong>
+                    </div>
+                  ) : null}
+                  {taxAmount > 0 ? (
+                    <div className="order-summary-row">
+                      <span>Tax</span>
+                      <strong>₹{taxAmount}</strong>
+                    </div>
+                  ) : null}
                   <div className="order-summary-total">
                     <span>Total</span>
                     <strong>₹{total}</strong>

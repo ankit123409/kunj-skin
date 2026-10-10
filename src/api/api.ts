@@ -50,6 +50,7 @@ export type CreateOrderPayload = {
   items: { product: string; quantity: number }[]
   address: OrderAddress
   paymentType: PaymentType
+  couponCode?: string
 }
 
 export type RazorpayOrderData = {
@@ -135,6 +136,77 @@ export async function createOrderApi(payload: CreateOrderPayload, token?: string
   return res.data
 }
 
+export type CouponPayload = {
+  code: string
+  productIds?: string[]
+  startDate: string
+  endDate: string
+  discountPercentage: number
+  isActive: boolean
+  minimumOrderAmount?: number
+  maximumDiscountAmount?: number
+  usageLimit?: number
+  perCustomerLimit?: number
+}
+
+export async function getCouponsApi(token?: string) {
+  const res = await instance.get('/coupons', {
+    headers: authHeaders(token),
+  })
+  const data = res.data
+  if (Array.isArray(data)) return data
+  if (Array.isArray(data?.data)) return data.data
+  if (Array.isArray(data?.coupons)) return data.coupons
+  if (Array.isArray(data?.result)) return data.result
+  return []
+}
+
+export type CouponValidationPayload = {
+  couponCode: string
+  items: { product: string; quantity: number }[]
+}
+
+export async function validateCouponApi(payload: CouponValidationPayload, token?: string) {
+  const res = await instance.post('/coupons/validate', payload, {
+    headers: authHeaders(token),
+  })
+  return res.data as {
+    success?: boolean
+    message?: string
+    data?: {
+      discountPercentage?: number
+      discountAmount?: number
+      finalTotal?: number
+      totalAfterDiscount?: number
+      discountedTotal?: number
+      total?: number
+      couponCode?: string
+      coupon?: { discountPercentage?: number; code?: string }
+    }
+  }
+}
+
+export async function createCouponApi(payload: CouponPayload, token?: string) {
+  const res = await instance.post('/coupons', payload, {
+    headers: authHeaders(token),
+  })
+  return res.data as { success?: boolean; message?: string; data?: unknown }
+}
+
+export async function updateCouponApi(id: string, payload: CouponPayload, token?: string) {
+  const res = await instance.put(`/coupons/${id}`, payload, {
+    headers: authHeaders(token),
+  })
+  return res.data as { success?: boolean; message?: string; data?: unknown }
+}
+
+export async function deleteCouponApi(id: string, token?: string) {
+  const res = await instance.delete(`/coupons/${id}`, {
+    headers: authHeaders(token),
+  })
+  return res.data as { success?: boolean; message?: string }
+}
+
 export async function verifyPaymentApi(payload: VerifyPaymentPayload, token?: string) {
   const res = await instance.post('/payment/verify', payload, {
     headers: authHeaders(token),
@@ -170,6 +242,13 @@ export async function updateOrderStatusApi(id: string, status: string, token?: s
   return res.data as { success?: boolean; message?: string; data?: unknown }
 }
 
+export async function bulkUpdateAdminOrderStatusApi(orderIds: string[], status: string, token?: string) {
+  const res = await instance.patch('/orders/admin/status', { orderIds, status }, {
+    headers: authHeaders(token),
+  })
+  return res.data as { success?: boolean; message?: string; data?: unknown }
+}
+
 export async function getProducts() {
   const res = await instance.get('/products')
   const data = res.data
@@ -183,13 +262,27 @@ export async function getProducts() {
   return []
 }
 
+export function calculateDiscount(actualMrp: number, sellingPrice: number) {
+  const safeActualMrp = Number(actualMrp) || 0
+  const safeSellingPrice = Number(sellingPrice) || 0
+
+  if (!safeActualMrp || safeSellingPrice <= 0) return 0
+  if (safeSellingPrice >= safeActualMrp) return 0
+
+  return Math.round(((safeActualMrp - safeSellingPrice) / safeActualMrp) * 100)
+}
+
 export type ProductPayload = {
-  image: string
+  image?: string
+  images: string[]
   video: string
   title: string
   size: string
-  price: number
+  actualMrp: number
+  sellingPrice: number
+  discount: number
   description: string
+  price?: number
 }
 
 export async function createProductApi(payload: ProductPayload, token?: string) {

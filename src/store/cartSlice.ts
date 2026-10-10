@@ -4,9 +4,13 @@ import type { PayloadAction } from '@reduxjs/toolkit'
 export type Product = {
   title: string
   price: number
+  actualMrp?: number
+  sellingPrice?: number
+  discount?: number
   size?: string
   image?: string
   img?: string
+  images?: string[]
   video?: string
   description?: string
   createdAt?: string

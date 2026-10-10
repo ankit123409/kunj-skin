@@ -1,4 +1,5 @@
 import './ProductDetail.css'
+import { useEffect, useMemo, useState } from 'react'
 import fallbackImage from '../assets/p1.png'
 import type { Product } from '../store/cartSlice'
 import { useAppDispatch, useAppSelector } from '../hooks'
@@ -7,10 +8,27 @@ import { openCart } from '../store/uiSlice'
 import { navigate } from '../router'
 
 export default function ProductDetail({ id }: { id: string }) {
-  console.log("id",id);
   const product: Product | undefined = useAppSelector((s) => s.products.items.find((p) => p._id === id))
-
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
   const dispatch = useAppDispatch()
+
+  const galleryImages = useMemo(() => {
+    const images = product?.images?.length
+      ? product.images.filter(Boolean)
+      : [product?.image || product?.img || fallbackImage]
+
+    return images.length ? images : [fallbackImage]
+  }, [product?.images, product?.image, product?.img])
+
+  useEffect(() => {
+    if (galleryImages.length <= 1) return
+
+    const timer = window.setInterval(() => {
+      setActiveImageIndex((prev) => (prev + 1) % galleryImages.length)
+    }, 2500)
+
+    return () => window.clearInterval(timer)
+  }, [galleryImages.length])
 
   const quantity = useAppSelector(
     (state) => state.cart.items.find((item) => item._id === product?._id)?.quantity ?? 0
@@ -80,13 +98,27 @@ export default function ProductDetail({ id }: { id: string }) {
               </button>
 
               <div className="detail-image-wrapper">
+                <div className="detail-image-gallery" aria-label={`${product.title} product images`}>
+                  <img
+                    src={galleryImages[activeImageIndex] || fallbackImage}
+                    alt={product.title}
+                    className="detail-product-image"
+                  />
 
-                <img
-                  src={product.image || product.img || fallbackImage}
-                  alt={product.title}
-                  className="detail-product-image"
-                />
-
+                  {galleryImages.length > 1 && (
+                    <div className="detail-slider-dots" aria-label="Product image navigation">
+                      {galleryImages.map((_, index) => (
+                        <button
+                          key={`${product._id}-detail-dot-${index}`}
+                          type="button"
+                          className={`detail-slider-dot ${index === activeImageIndex ? 'active' : ''}`}
+                          aria-label={`View image ${index + 1}`}
+                          onClick={() => setActiveImageIndex(index)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="image-brand">
