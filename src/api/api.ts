@@ -146,7 +146,8 @@ export type CouponPayload = {
   minimumOrderAmount?: number
   maximumDiscountAmount?: number
   usageLimit?: number
-  perCustomerLimit?: number
+  perCustomerLimit?: number,
+  productId?: string[]
 }
 
 export async function getCouponsApi(token?: string) {
@@ -166,24 +167,33 @@ export type CouponValidationPayload = {
   items: { product: string; quantity: number }[]
 }
 
+export type CouponValidationData = {
+  discountPercentage?: number
+  discountAmount?: number
+  eligibleSubtotal?: number
+  subtotal?: number
+  finalTotal?: number
+  totalAmount?: number
+  totalAfterDiscount?: number
+  discountedTotal?: number
+  total?: number
+  couponCode?: string
+  coupon?: { discountPercentage?: number; code?: string }
+  discount?: number
+  code?: string
+}
+
+export type CouponValidationResponse = {
+  success?: boolean
+  message?: string
+  data?: CouponValidationData
+} & Partial<CouponValidationData>
+
 export async function validateCouponApi(payload: CouponValidationPayload, token?: string) {
   const res = await instance.post('/coupons/validate', payload, {
     headers: authHeaders(token),
   })
-  return res.data as {
-    success?: boolean
-    message?: string
-    data?: {
-      discountPercentage?: number
-      discountAmount?: number
-      finalTotal?: number
-      totalAfterDiscount?: number
-      discountedTotal?: number
-      total?: number
-      couponCode?: string
-      coupon?: { discountPercentage?: number; code?: string }
-    }
-  }
+  return res.data as CouponValidationResponse
 }
 
 export async function createCouponApi(payload: CouponPayload, token?: string) {

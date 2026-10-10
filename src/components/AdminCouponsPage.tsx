@@ -9,7 +9,7 @@ import type { Product } from '../store/cartSlice'
 
 const emptyForm = (): CouponPayload => ({
   code: '',
-  productId: null,
+  productId: undefined,
   productIds: [],
   startDate: new Date().toISOString().slice(0, 10),
   endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString().slice(0, 10),

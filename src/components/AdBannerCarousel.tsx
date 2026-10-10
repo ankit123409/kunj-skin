@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import './AdBannerCarousel.css'
-import temp from '../assets/temp.png'
-import elem2 from '../assets/elem2.png'
-import elem3 from '../assets/elem3..png'
+// import temp from '../assets/temp.png'
+// import elem2 from '../assets/elem2.png'
+// import elem3 from '../assets/elem3..png'
 
 const slides = [
   // temp,

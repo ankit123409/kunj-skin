@@ -186,7 +186,7 @@ export default function AdminProductsPage() {
       return
     }
 
-    if (editingId && !selectedFiles.length && !form.image.trim() && (!form.images || form.images.length === 0)) {
+    if (editingId && !selectedFiles.length && !form?.image?.trim() && (!form.images || form.images.length === 0)) {
       setError('Please select at least one product image')
       return
     }

@@ -2,11 +2,19 @@ import { useEffect, useRef, useState } from 'react'
 import './CartDrawer.css'
 import fallbackImage from '../assets/p1.png'
 import { useAppDispatch, useAppSelector } from '../hooks'
-import { validateCouponApi } from '../api/api'
+import { validateCouponApi, type CouponValidationData } from '../api/api'
 import { decrement, removeFromCart, addToCart } from '../store/cartSlice'
 import { closeCart, openCart, openProfile, startCheckout } from '../store/uiSlice'
 
 const APPLIED_COUPON_STORAGE_KEY = 'kunj-skin-applied-coupon'
+
+type AppliedCoupon = {
+  code: string
+  discountPercentage: number
+  discountAmount: number
+  finalTotal: number
+  subtotal: number
+}
 
 export default function CartDrawer(){
   const dispatch = useAppDispatch()
@@ -19,7 +27,7 @@ export default function CartDrawer(){
   const [couponCode, setCouponCode] = useState('')
   const [couponError, setCouponError] = useState('')
   const [couponSuccess, setCouponSuccess] = useState('')
-  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discountPercentage: number; discountAmount: number; finalTotal: number; subtotal: number } | null>(null)
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null)
   const [validatingCoupon, setValidatingCoupon] = useState(false)
 
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0)
@@ -31,10 +39,11 @@ export default function CartDrawer(){
 
     try {
       const parsed = JSON.parse(savedCoupon) as { code?: string }
-      if (parsed?.code) {
-        setCouponCode(parsed.code)
+      const parsedCode = parsed?.code?.trim() || ''
+      if (parsedCode) {
+        setCouponCode(parsedCode)
         setAppliedCoupon((prev) => prev ?? {
-          code: parsed.code,
+          code: parsedCode,
           discountPercentage: 0,
           discountAmount: 0,
           finalTotal: subtotal,
@@ -85,8 +94,7 @@ export default function CartDrawer(){
       }
 
       const response = await validateCouponApi(payload, token || undefined)
-      const data = response?.data ?? response
-      const detail = data && typeof data === 'object' ? data : {}
+      const detail = (response?.data && typeof response.data === 'object' ? response.data : response) as CouponValidationData
       const discountPercentage = Number(detail.discountPercentage ?? detail.coupon?.discountPercentage ?? 0)
       const discountAmount = Number(detail.discountAmount ?? detail.discount ?? 0)
       const validatedSubtotal = Number(detail.eligibleSubtotal ?? detail.subtotal ?? subtotal)
