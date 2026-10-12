@@ -20,6 +20,68 @@
   max-width: 100%;
 }
 
+.product-card-skeleton {
+  border: 1px solid #f0e7e0;
+  background: #fff;
+  overflow: hidden;
+  border-radius: 18px;
+}
+
+.skeleton-media {
+  height: 310px;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #fffaf7 0%, #f9f2ed 50%, #f5eae3 100%);
+}
+
+.product-card-body {
+  padding: 16px 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(90deg, #f3e9e3 25%, #f9f3ef 50%, #f3e9e3 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+  border-radius: 10px;
+}
+
+.skeleton-image {
+  position: absolute;
+  inset: 24px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f4e8e0 25%, #faf4f0 50%, #f4e8e0 75%);
+  background-size: 200% 100%;
+}
+
+.skeleton-line {
+  height: 14px;
+  width: 100%;
+}
+
+.skeleton-line-short {
+  width: 72%;
+}
+
+.skeleton-line-price {
+  width: 40%;
+  height: 18px;
+  margin-top: 8px;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 @media (max-width: 1024px) {
   .product-list {
     padding: 0 16px;

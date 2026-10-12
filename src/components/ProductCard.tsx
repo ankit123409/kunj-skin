@@ -36,8 +36,14 @@ export default function ProductCard({ product }: { product: Product }) {
   const inCart = quantity > 0
   const isFavorite = useAppSelector((state) => state.favorites.items.includes(product._id || product.id || ''))
 
-  const mrp = Math.round(product.price * 1.25)
-  const discount = Math.round(((mrp - product.price) / mrp) * 100)
+  const actualMrp = Number(product.actualMrp ?? product.sellingPrice ?? product.price ?? 0)
+  const sellingPrice = Number(product.sellingPrice ?? product.price ?? actualMrp ?? 0)
+  const discount = Number(
+    product.discount ??
+      (actualMrp > 0 && sellingPrice > 0 && sellingPrice < actualMrp
+        ? Math.round(((actualMrp - sellingPrice) / actualMrp) * 100)
+        : 0),
+  )
 
   return (
     <article className="product-card">
@@ -143,11 +149,11 @@ export default function ProductCard({ product }: { product: Product }) {
           <div className="price-left">
 
             <span className="selling-price">
-              ₹{product.price}
+              ₹{sellingPrice}
             </span>
 
             <span className="mrp">
-              ₹{mrp}
+              ₹{actualMrp}
             </span>
 
             <span className="saving">

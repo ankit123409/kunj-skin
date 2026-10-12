@@ -792,9 +792,9 @@ export default function ProfileModal() {
           </div>
         ) : checkoutFlow ? (
           <div className="checkout-panel">
-            {addressView !== 'payment' && (
+            {/* {addressView !== 'payment' && (
               <div className="checkout-offer-banner">Unlock Extra 5% OFF on Prepaid Orders</div>
-            )}
+            )} */}
 
             {addressView === 'list' && (
               <div className="address-book">

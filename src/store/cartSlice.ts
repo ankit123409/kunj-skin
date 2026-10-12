@@ -35,11 +35,24 @@ const cartSlice = createSlice({
   reducers: {
     addToCart(state, action: PayloadAction<Product>) {
       const payload = action.payload
-      
+      const normalizedPrice = Number(payload.sellingPrice ?? payload.price ?? payload.actualMrp ?? 0)
+      const normalizedMrp = Number(payload.actualMrp ?? payload.sellingPrice ?? payload.price ?? normalizedPrice)
+      const normalizedDiscount = Number(payload.discount ?? (normalizedMrp > 0 && normalizedPrice > 0 && normalizedPrice < normalizedMrp ? Math.round(((normalizedMrp - normalizedPrice) / normalizedMrp) * 100) : 0))
+
       const existing = state.items.find((i) => i._id === payload._id)
-      
-      if (existing) existing.quantity += 1
-      else state.items.push({ ...payload, quantity: 1 })
+
+      if (existing) {
+        existing.quantity += 1
+      } else {
+        state.items.push({
+          ...payload,
+          price: normalizedPrice,
+          actualMrp: normalizedMrp,
+          sellingPrice: normalizedPrice,
+          discount: normalizedDiscount,
+          quantity: 1,
+        })
+      }
     },
     removeFromCart(state, action: PayloadAction<string>) {
       const _id = action.payload

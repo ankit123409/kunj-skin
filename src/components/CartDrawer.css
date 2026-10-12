@@ -28,6 +28,19 @@
   overflow: hidden;
 }
 
+@media (max-width: 480px) {
+  .cart-overlay {
+    justify-content: center;
+  }
+
+  .cart-drawer {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    height: 100dvh;
+  }
+}
+
 .cart-drawer.open {
   transform: translateX(0%);
 }

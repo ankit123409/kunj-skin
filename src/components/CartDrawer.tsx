@@ -30,7 +30,10 @@ export default function CartDrawer(){
   const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null)
   const [validatingCoupon, setValidatingCoupon] = useState(false)
 
-  const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0)
+  const subtotal = items.reduce((sum, i) => {
+    const unitPrice = Number(i.sellingPrice ?? i.price ?? i.actualMrp ?? 0)
+    return sum + unitPrice * i.quantity
+  }, 0)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -94,11 +97,22 @@ export default function CartDrawer(){
       }
 
       const response = await validateCouponApi(payload, token || undefined)
-      const detail = (response?.data && typeof response.data === 'object' ? response.data : response) as CouponValidationData
-      const discountPercentage = Number(detail.discountPercentage ?? detail.coupon?.discountPercentage ?? 0)
+      const detail = (response && typeof response === 'object' && 'data' in response && response.data && typeof response.data === 'object'
+        ? response.data
+        : response) as Partial<CouponValidationData> & Record<string, unknown>
+
+      const couponInfo = detail.coupon && typeof detail.coupon === 'object' ? detail.coupon as { discountPercentage?: number; code?: string } : undefined
+      const discountPercentage = Number(detail.discountPercentage ?? couponInfo?.discountPercentage ?? 0)
       const discountAmount = Number(detail.discountAmount ?? detail.discount ?? 0)
       const validatedSubtotal = Number(detail.eligibleSubtotal ?? detail.subtotal ?? subtotal)
-      const finalTotal = Number(detail.totalAmount ?? detail.finalTotal ?? detail.totalAfterDiscount ?? detail.discountedTotal ?? detail.total ?? Math.max(validatedSubtotal - discountAmount, 0))
+      const finalTotal = Number(
+        detail.totalAmount ??
+        detail.finalTotal ??
+        detail.totalAfterDiscount ??
+        detail.discountedTotal ??
+        detail.total ??
+        Math.max(validatedSubtotal - discountAmount, 0),
+      )
 
       if (!response?.success && response?.message) {
         setCouponError(response.message)
@@ -261,8 +275,8 @@ export default function CartDrawer(){
                   <div className="cart-meta">{item.size || '30ml'}</div>
 
                   <div className="cart-price-row">
-                    <div className="cart-price">₹{item.price * item.quantity}</div>
-                    <div className="cart-old-price">₹{Math.round(item.price * 1.2)}</div>
+                    <div className="cart-price">₹{Number(item.sellingPrice ?? item.price ?? item.actualMrp ?? 0) * item.quantity}</div>
+                    <div className="cart-old-price">₹{Number(item.actualMrp ?? item.sellingPrice ?? item.price ?? 0) * item.quantity}</div>
                   </div>
 
                   {/* <div className="cart-save">Flat 20% off</div> */}

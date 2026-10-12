@@ -83,20 +83,36 @@ body {
    ========================================================= */
 
 #center {
-  width: min(100%, 1480px);
+  width: 100%;
+  max-width: 1480px;
   flex: 1;
-
   display: block;
-
-  padding: 0;
-
+  padding: 0 12px;
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
-@media (max-width: 768px) {
+@media (min-width: 480px) {
   #center {
-    width: 100%;
-    max-width: 100%;
+    padding-inline: 14px;
+  }
+}
+
+@media (min-width: 768px) {
+  #center {
+    padding-inline: 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  #center {
+    padding-inline: 24px;
+  }
+}
+
+@media (min-width: 1440px) {
+  #center {
+    padding-inline: 28px;
   }
 }
 

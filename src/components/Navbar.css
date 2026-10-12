@@ -75,7 +75,7 @@
   border: none;
   background: transparent;
   padding: 12px 0;
-  font-size: 18px;
+  font-size: 16px;
   color: #1f1d1d;
   outline: none;
   width: 100%;
@@ -204,11 +204,13 @@
 
   .site-navbar .left {
     flex: 1 1 auto;
+    min-width: 0;
   }
 
   .site-navbar .left .logo {
     font-size: 28px;
     letter-spacing: -1px;
+    white-space: normal;
   }
 
   .nav-panel {
@@ -244,5 +246,19 @@
   .icon-btn {
     width: 40px;
     height: 40px;
+  }
+}
+
+@media (max-width: 380px) {
+  .site-navbar .container {
+    padding-inline: 10px;
+  }
+
+  .site-navbar .left .logo {
+    font-size: 24px;
+  }
+
+  .nav-actions {
+    gap: 8px;
   }
 }

@@ -14,6 +14,8 @@ export default function ProductList({
   const query = search.trim().toLowerCase()
 
   const products = useAppSelector((s) => s.products.items)
+  const loading = useAppSelector((s) => s.products.loading)
+  const isLoadingProducts = loading && products.length === 0
 
   const filteredProducts = query
     ? products.filter((product) =>
@@ -31,9 +33,20 @@ export default function ProductList({
       )}
 
       <div className="grid">
-        {filteredProducts?.map((p) => (
-          <ProductCard key={p._id} product={p} />
-        ))}
+        {isLoadingProducts
+          ? Array.from({ length: 6 }).map((_, index) => (
+              <div className="product-card product-card-skeleton" key={`product-skeleton-${index}`}>
+                <div className="product-media skeleton-media">
+                  <div className="skeleton skeleton-image" />
+                </div>
+                <div className="product-card-body">
+                  <div className="skeleton skeleton-line skeleton-line-short" />
+                  <div className="skeleton skeleton-line" />
+                  <div className="skeleton skeleton-line skeleton-line-price" />
+                </div>
+              </div>
+            ))
+          : filteredProducts?.map((p) => <ProductCard key={p._id} product={p} />)}
       </div>
 
       {query && filteredProducts?.length === 0 && (
