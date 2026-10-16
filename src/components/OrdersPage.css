@@ -320,6 +320,46 @@
   color: #1f2430;
 }
 
+.order-payment-mode {
+  margin-top: 8px;
+}
+
+.payment-mode-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: 1px solid #dfe4ec;
+  color: #1f2430;
+  background: #f5f7fa;
+}
+
+.payment-mode-chip.cash {
+  background: #e8f7ee;
+  color: #1d7f45;
+  border-color: #bfe8cd;
+}
+
+.payment-mode-chip.online {
+  background: #eaf3ff;
+  color: #175ad6;
+  border-color: #c9ddff;
+}
+
+.payment-mode-chip.upi {
+  background: #f3ebff;
+  color: #6d41d8;
+  border-color: #d9c8ff;
+}
+
+.payment-mode-chip.unknown {
+  background: #f3f4f6;
+  color: #475467;
+}
+
 .status-dot {
   width: 9px;
   height: 9px;

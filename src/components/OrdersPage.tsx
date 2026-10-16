@@ -87,7 +87,7 @@ function orderDateKey(value: string) {
 function normalizePaymentMethod(value: unknown): string {
   if (typeof value === 'number') {
     if (value === 1) return 'cash'
-    if (value === 2) return 'card'
+    if (value === 2) return 'online'
     if (value === 3) return 'upi'
     return 'all'
   }
@@ -95,8 +95,14 @@ function normalizePaymentMethod(value: unknown): string {
   if (typeof value === 'string') {
     const normalized = value.trim().toLowerCase()
     if (!normalized) return 'all'
-    if (normalized.includes('cash')) return 'cash'
-    if (normalized.includes('card')) return 'card'
+    if (normalized.includes('cash') || normalized.includes('cod') || normalized.includes('cash on delivery')) return 'cash'
+    if (
+      normalized.includes('online') ||
+      normalized.includes('card') ||
+      normalized.includes('razorpay') ||
+      normalized.includes('gateway') ||
+      normalized.includes('netbanking')
+    ) return 'online'
     if (normalized.includes('upi')) return 'upi'
     return normalized
   }
@@ -107,6 +113,14 @@ function normalizePaymentMethod(value: unknown): string {
   }
 
   return 'all'
+}
+
+function formatPaymentMethod(value: string): string {
+  if (!value || value === 'all') return 'Unknown'
+  if (value === 'cash') return 'Cash'
+  if (value === 'online') return 'Online'
+  if (value === 'upi') return 'UPI'
+  return value.charAt(0).toUpperCase() + value.slice(1)
 }
 
 function normalizeOrder(raw: unknown, index: number): OrderRow {
@@ -318,7 +332,7 @@ export default function OrdersPage() {
                 <select value={paymentFilter} onChange={(event) => setPaymentFilter(event.target.value)}>
                   <option value="all">All modes</option>
                   <option value="cash">Cash</option>
-                  <option value="card">Card</option>
+                  <option value="online">Online</option>
                   <option value="upi">UPI</option>
                 </select>
               </label>
@@ -492,6 +506,11 @@ export default function OrdersPage() {
                     <div className="status-title">
                       <span className="status-dot" />
                       {statusLabel(order.status, order.createdAt)}
+                    </div>
+                    <div className="order-payment-mode">
+                      <span className={`payment-mode-chip ${order.paymentMethod || 'unknown'}`}>
+                        {formatPaymentMethod(order.paymentMethod || 'all')}
+                      </span>
                     </div>
                     <p>{statusHint(order.status)}</p>
                     {isAdmin && (

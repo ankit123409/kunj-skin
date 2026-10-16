@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import './AdminProductsPage.css'
+import './AdminCouponsPage.css'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { createCouponApi, deleteCouponApi, getAuthToken, getCouponsApi, updateCouponApi, type CouponPayload } from '../api/api'
 import { fetchProducts } from '../store/productsSlice'
@@ -228,25 +228,28 @@ export default function AdminCouponsPage() {
   const selectedProducts = (form.productIds || []).filter(Boolean)
 
   return (
-    <main className="admin-products-page">
-      <div className="admin-products-container">
-        <div className="admin-products-header">
+    <main className="coupon-admin-page">
+      <div className="coupon-admin-container">
+        <div className="coupon-admin-header">
           <div>
-            <p className="admin-kicker">Admin</p>
+            <p className="coupon-admin-kicker">Admin</p>
             <h1>Coupon Manage</h1>
           </div>
-          <button type="button" className="admin-primary-btn" onClick={openAdd}>
+          <button type="button" className="coupon-admin-primary-btn" onClick={openAdd}>
             + Add coupon
           </button>
         </div>
 
         {showForm && (
-          <section className="admin-product-form">
-            <div className="admin-form-head">
-              <h2>{editingId ? 'Update coupon' : 'Add coupon'}</h2>
+          <section className="coupon-form-card">
+            <div className="coupon-form-header">
+              <div>
+                <h2>Create a coupon</h2>
+                <p>Set the discount, limits and validity for your coupon code.</p>
+              </div>
               <button
                 type="button"
-                className="admin-ghost-btn"
+                className="coupon-admin-cancel-btn"
                 disabled={saving}
                 onClick={() => {
                   setShowForm(false)
@@ -259,164 +262,167 @@ export default function AdminCouponsPage() {
               </button>
             </div>
 
-            <label>Coupon code *</label>
-            <input
-              className="admin-product-form-control"
-              type="text"
-              value={form.code}
-              placeholder="SAVE20"
-              onChange={(e) => setForm({ ...form, code: e.target.value })}
-            />
+            <div className="coupon-form-grid">
+              <div className="coupon-field">
+                <label htmlFor="coupon-code">Coupon code <span>*</span></label>
+                <input
+                  id="coupon-code"
+                  type="text"
+                  value={form.code}
+                  placeholder="SAVE20"
+                  onChange={(e) => setForm({ ...form, code: e.target.value })}
+                />
+              </div>
 
-            <label>Products</label>
-            <div className="coupon-product-dropdown-wrap">
-              <button
-                type="button"
-                className={`coupon-product-dropdown ${productDropdownOpen ? 'open' : ''}`}
-                onClick={() => setProductDropdownOpen((open) => !open)}
-              >
-                <span>
-                  {selectedProducts.length > 0
-                    ? `${selectedProducts.length} selected`
-                    : 'All products'}
-                </span>
-                <span className="coupon-dropdown-caret">▾</span>
-              </button>
-
-              {productDropdownOpen && (
-                <div className="coupon-product-dropdown-menu">
+              <div className="coupon-field">
+                <label>Apply to products</label>
+                <div className="coupon-product-dropdown-wrap">
                   <button
                     type="button"
-                    className={`coupon-product-option ${selectedProducts.length === 0 ? 'selected' : ''}`}
-                    onClick={() => {
-                      setForm({ ...form, productIds: [] })
-                      setProductDropdownOpen(false)
-                    }}
+                    className={`coupon-product-dropdown ${productDropdownOpen ? 'open' : ''}`}
+                    onClick={() => setProductDropdownOpen((open) => !open)}
                   >
-                    <span>All products</span>
+                    <span>
+                      {selectedProducts.length > 0 ? `${selectedProducts.length} selected` : 'All products'}
+                    </span>
+                    <span className="coupon-dropdown-caret">▾</span>
                   </button>
 
-                  {products.map((product: Product) => {
-                    const id = String(product._id || product.id || '')
-                    const isSelected = selectedProducts.includes(id)
-
-                    return (
+                  {productDropdownOpen && (
+                    <div className="coupon-product-dropdown-menu">
                       <button
                         type="button"
-                        key={id}
-                        className={`coupon-product-option ${isSelected ? 'selected' : ''}`}
-                        onClick={(event) => {
-                          const keepOpen = event.metaKey || event.ctrlKey
-                          toggleProductSelection(id, keepOpen)
+                        className={`coupon-product-option ${selectedProducts.length === 0 ? 'selected' : ''}`}
+                        onClick={() => {
+                          setForm({ ...form, productIds: [] })
+                          setProductDropdownOpen(false)
                         }}
                       >
-                        <span>{product.title}</span>
-                        {isSelected && <span className="coupon-option-check">✓</span>}
+                        <span>All products</span>
                       </button>
-                    )
-                  })}
+
+                      {products.map((product: Product) => {
+                        const id = String(product._id || product.id || '')
+                        const isSelected = selectedProducts.includes(id)
+
+                        return (
+                          <button
+                            type="button"
+                            key={id}
+                            className={`coupon-product-option ${isSelected ? 'selected' : ''}`}
+                            onClick={(event) => {
+                              const keepOpen = event.metaKey || event.ctrlKey
+                              toggleProductSelection(id, keepOpen)
+                            }}
+                          >
+                            <span>{product.title}</span>
+                            {isSelected && <span className="coupon-option-check">✓</span>}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
+
+              <div className="coupon-field">
+                <label htmlFor="coupon-start-date">Start date <span>*</span></label>
+                <div className="coupon-date-input-wrap">
+                  <input
+                    id="coupon-start-date"
+                    type="date"
+                    value={form.startDate}
+                    onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="coupon-field">
+                <label htmlFor="coupon-end-date">End date <span>*</span></label>
+                <div className="coupon-date-input-wrap">
+                  <input
+                    id="coupon-end-date"
+                    type="date"
+                    value={form.endDate}
+                    onChange={(e) => setForm({ ...form, endDate: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="coupon-field">
+                <label htmlFor="coupon-discount">Discount (%) <span>*</span></label>
+                <input
+                  id="coupon-discount"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={form.discountPercentage}
+                  onChange={(e) => setForm({ ...form, discountPercentage: Number(e.target.value || 0) })}
+                />
+              </div>
+
+              <div className="coupon-field">
+                <label htmlFor="coupon-min-order">Minimum order amount <span>*</span></label>
+                <input
+                  id="coupon-min-order"
+                  type="number"
+                  min="0"
+                  value={form.minimumOrderAmount}
+                  onChange={(e) => setForm({ ...form, minimumOrderAmount: Number(e.target.value || 0) })}
+                />
+              </div>
+
+              <div className="coupon-field">
+                <label htmlFor="coupon-max-discount">Maximum discount amount <span>*</span></label>
+                <input
+                  id="coupon-max-discount"
+                  type="number"
+                  min="0"
+                  value={form.maximumDiscountAmount}
+                  onChange={(e) => setForm({ ...form, maximumDiscountAmount: Number(e.target.value || 0) })}
+                />
+              </div>
+
+              <div className="coupon-field">
+                <label htmlFor="coupon-usage-limit">Total usage limit</label>
+                <input
+                  id="coupon-usage-limit"
+                  type="number"
+                  min="0"
+                  value={form.usageLimit}
+                  onChange={(e) => setForm({ ...form, usageLimit: Number(e.target.value || 0) })}
+                />
+              </div>
+
+              <div className="coupon-field">
+                <label htmlFor="coupon-per-customer-limit">Per-customer limit</label>
+                <input
+                  id="coupon-per-customer-limit"
+                  type="number"
+                  min="1"
+                  value={form.perCustomerLimit}
+                  onChange={(e) => setForm({ ...form, perCustomerLimit: Number(e.target.value || 1) })}
+                />
+              </div>
             </div>
 
-            {selectedProducts.length > 0 && (
-              <div className="coupon-selected-products">
-                {selectedProducts.map((productId) => {
-                  const product = products.find((item: Product) => String(item._id || item.id || '') === productId)
-                  const label = product?.title || 'Selected product'
-
-                  return (
-                    <button
-                      type="button"
-                      key={productId}
-                      className="coupon-selected-pill"
-                      onClick={() => toggleProductSelection(productId, true)}
-                      title="Remove product"
-                    >
-                      {label}
-                      <span aria-hidden="true">×</span>
-                    </button>
-                  )
-                })}
+            <div className="coupon-form-footer">
+              <div className="coupon-toggle-row">
+                <label className="coupon-toggle">
+                  <input
+                    type="checkbox"
+                    checked={form.isActive}
+                    onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
+                  />
+                  <span className="coupon-toggle-slider" />
+                </label>
+                <span>Coupon is active and can be used by customers.</span>
               </div>
-            )}
 
-            <small className="admin-file-hint">Click to select, click a selected chip to remove, or hold Ctrl/Command to keep the dropdown open while choosing multiple products.</small>
-
-            <label>Start date *</label>
-            <input
-              className="admin-product-form-control"
-              type="date"
-              value={form.startDate}
-              onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-            />
-
-            <label>End date *</label>
-            <input
-              className="admin-product-form-control"
-              type="date"
-              value={form.endDate}
-              onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-            />
-
-            <label>Discount % *</label>
-            <input
-              className="admin-product-form-control"
-              type="number"
-              min="0"
-              max="100"
-              value={form.discountPercentage}
-              onChange={(e) => setForm({ ...form, discountPercentage: Number(e.target.value || 0) })}
-            />
-
-            <label>Min order amount</label>
-            <input
-              className="admin-product-form-control"
-              type="number"
-              min="0"
-              value={form.minimumOrderAmount}
-              onChange={(e) => setForm({ ...form, minimumOrderAmount: Number(e.target.value || 0) })}
-            />
-
-            <label>Max discount amount</label>
-            <input
-              className="admin-product-form-control"
-              type="number"
-              min="0"
-              value={form.maximumDiscountAmount}
-              onChange={(e) => setForm({ ...form, maximumDiscountAmount: Number(e.target.value || 0) })}
-            />
-
-            <label>Usage limit</label>
-            <input
-              className="admin-product-form-control"
-              type="number"
-              min="0"
-              value={form.usageLimit}
-              onChange={(e) => setForm({ ...form, usageLimit: Number(e.target.value || 0) })}
-            />
-
-            <label>Per customer limit</label>
-            <input
-              className="admin-product-form-control"
-              type="number"
-              min="1"
-              value={form.perCustomerLimit}
-              onChange={(e) => setForm({ ...form, perCustomerLimit: Number(e.target.value || 1) })}
-            />
-
-            <label className="admin-toggle-row">
-              <input
-                type="checkbox"
-                checked={form.isActive}
-                onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-              />
-              Active
-            </label>
-
-            <button type="button" className="admin-primary-btn" onClick={handleSave} disabled={saving}>
-              {saving ? (editingId ? 'Updating coupon...' : 'Creating coupon...') : (editingId ? 'Update coupon' : 'Create coupon')}
-            </button>
+              <button type="button" className="coupon-admin-submit-btn" onClick={handleSave} disabled={saving}>
+                {saving ? (editingId ? 'Updating coupon...' : 'Creating coupon...') : (editingId ? 'Update coupon' : 'Create coupon')}
+              </button>
+            </div>
           </section>
         )}
 
@@ -424,13 +430,23 @@ export default function AdminCouponsPage() {
         {message && <div className="admin-success">{message}</div>}
 
         {loadingProducts && coupons.length === 0 ? (
-          <p className="admin-products-note">Loading products...</p>
+          <div className="coupon-empty-state">
+            <div className="coupon-empty-icon">✦</div>
+            <p>Loading products...</p>
+          </div>
         ) : loadingCoupons ? (
-          <p className="admin-products-note">Loading coupons...</p>
+          <div className="coupon-empty-state">
+            <div className="coupon-empty-icon">✦</div>
+            <p>Loading coupons...</p>
+          </div>
         ) : coupons.length === 0 ? (
-          <p className="admin-products-note">No coupons yet. Add your first coupon.</p>
+          <div className="coupon-empty-state">
+            <div className="coupon-empty-icon">◌</div>
+            <h3>No coupons yet</h3>
+            <p>Create your first coupon to start offering discounts.</p>
+          </div>
         ) : (
-          <div className="admin-product-list">
+          <div className="coupon-list">
             {coupons.map((coupon) => {
               const id = getCouponId(coupon)
               const productIds = Array.isArray(coupon.productIds) && coupon.productIds.length > 0
@@ -445,18 +461,48 @@ export default function AdminCouponsPage() {
                   : 'All products'
 
               return (
-                <article key={id || coupon.code} className="admin-product-card coupon-card">
-                  <div className="admin-product-meta">
-                    <h3>{coupon.code || 'Coupon'}</h3>
-                    <p>{coupon.isActive ? 'Active' : 'Inactive'}</p>
-                    <strong>{coupon.discountPercentage || 0}% off</strong>
-                    <span className="coupon-product-label">{productTitle}</span>
+                <article key={id || coupon.code} className="coupon-list-row">
+                  <div className="coupon-main-info">
+                    <div className="coupon-icon-wrap" aria-hidden="true">
+                      <span className="coupon-icon">🎟</span>
+                    </div>
+
+                    <div className="coupon-text-block">
+                      <div className="coupon-header-line">
+                        <span className="coupon-code">{coupon.code || 'Coupon'}</span>
+                        <span className={`coupon-status ${coupon.isActive ? 'active' : 'inactive'}`}>
+                          <span className="status-dot" />
+                          {coupon.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
+
+                      <div className="coupon-meta-row">
+                        <div className="coupon-chip discount">
+                          <span className="meta-icon">◌</span>
+                          <div className="coupon-label-stack">
+                            <span>{coupon.discountPercentage || 0}% off</span>
+                            <small>Discount</small>
+                          </div>
+                        </div>
+
+                        <div className="coupon-chip product">
+                          <span className="meta-icon">▣</span>
+                          <div className="coupon-label-stack">
+                            <span>{productTitle === 'All products' ? 'All products' : 'Selected product'}</span>
+                            <small>Products</small>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="admin-product-actions">
-                    <button type="button" onClick={() => openEdit(coupon)}>Update</button>
+
+                  <div className="coupon-actions">
+                    <button type="button" className="coupon-update-btn" onClick={() => openEdit(coupon)}>
+                      Update
+                    </button>
                     <button
                       type="button"
-                      className="danger"
+                      className="coupon-delete-btn"
                       disabled={deletingId === id}
                       onClick={() => void handleDelete(coupon)}
                     >
@@ -469,7 +515,7 @@ export default function AdminCouponsPage() {
           </div>
         )}
 
-        <button type="button" className="admin-ghost-btn back-home" onClick={() => navigate('/')}>
+        <button type="button" className="coupon-admin-back-home" onClick={() => navigate('/')}>
           ← Back to shop
         </button>
       </div>
