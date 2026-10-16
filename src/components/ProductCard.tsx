@@ -12,9 +12,35 @@ export default function ProductCard({ product }: { product: Product }) {
   const [activeImageIndex, setActiveImageIndex] = useState(0)
 
   const galleryImages = useMemo(() => {
-    const images = product.images?.length
-      ? product.images.filter(Boolean)
-      : [product.image || product.img || '/fallback.png']
+    const normalizeImageList = (value: unknown): string[] => {
+      if (Array.isArray(value)) {
+        return value
+          .flatMap((item) => {
+            if (typeof item === 'string') return [item]
+            if (item && typeof item === 'object' && 'url' in item && typeof (item as { url?: unknown }).url === 'string') {
+              return [(item as { url: string }).url]
+            }
+            return []
+          })
+          .map((item) => String(item).trim())
+          .filter(Boolean)
+      }
+
+      if (typeof value === 'string') {
+        return value
+          .split(',')
+          .map((item) => item.trim())
+          .filter(Boolean)
+      }
+
+      return []
+    }
+
+    const images = [
+      ...normalizeImageList(product.images),
+      ...normalizeImageList(product.image),
+      ...normalizeImageList(product.img),
+    ].filter((url, index, array) => url && array.indexOf(url) === index)
 
     return images.length ? images : ['/fallback.png']
   }, [product.images, product.image, product.img])

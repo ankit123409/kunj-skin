@@ -28,6 +28,9 @@ type OrderRow = {
   customerName?: string
   customerMobile?: string
   paymentMethod?: string
+  shippingMethod?: 'shiprocket' | 'own' | string
+  shippingStatus?: string
+  shipmentStatus?: string
   items: OrderProduct[]
 }
 
@@ -112,6 +115,8 @@ function normalizeOrder(raw: unknown, index: number): OrderRow {
   const user = asRecord(order.user) ?? asRecord(order.customer)
   const address = asRecord(order.address)
   const paymentMethod = normalizePaymentMethod(order.paymentType ?? order.paymentMethod ?? order.payment ?? order.method)
+  const shippingMethod = String(order.shippingMethod ?? order.shipping_method ?? order.shipping ?? '').trim().toLowerCase()
+  const shipmentStatus = String(order.shipmentStatus ?? order.shippingStatus ?? order.shipping_status ?? '').trim()
 
   return {
     id: String(order._id || order.id || `order-${index}`),
@@ -123,6 +128,8 @@ function normalizeOrder(raw: unknown, index: number): OrderRow {
     customerName: String(user?.name || address?.name || ''),
     customerMobile: String(user?.mobile || address?.mobile || ''),
     paymentMethod,
+    shippingMethod: shippingMethod === 'shiprocket' || shippingMethod === 'own' ? shippingMethod : 'not_selected',
+    shippingStatus: shipmentStatus || 'not_selected',
     items,
   }
 }
@@ -414,6 +421,14 @@ export default function OrdersPage() {
               const total = order.totalAmount ?? order.total ?? 0
               const tone = statusTone(order.status)
               const delivered = tone === 'delivered'
+              const shippingLabel = order.shippingMethod === 'shiprocket'
+                ? 'Shipping: Shiprocket'
+                : order.shippingMethod === 'own'
+                  ? 'Shipping: Own Shipping'
+                  : 'Shipping: Not selected'
+              const shipmentLabel = order.shippingStatus && order.shippingStatus !== 'not_selected'
+                ? `Shipment: ${String(order.shippingStatus).replace(/_/g, ' ')}`
+                : 'Shipment: Pending'
 
               return (
                 <div
@@ -459,6 +474,12 @@ export default function OrdersPage() {
                           ? `Size: ${firstItem.size}`
                           : `Qty: ${firstItem?.quantity || 1}`}
                     </p>
+                    {isAdmin && (
+                      <p className="order-shipping-indicator">{shippingLabel}</p>
+                    )}
+                    {isAdmin && (
+                      <p className="order-shipment-indicator">{shipmentLabel}</p>
+                    )}
                     {isAdmin && (order.customerName || order.customerMobile) ? (
                       <p className="order-customer">
                         {order.customerName || 'Customer'}
@@ -478,14 +499,32 @@ export default function OrdersPage() {
                         compact
                         orderId={orderId}
                         status={order.status}
-                        onUpdated={(nextStatus) => {
+                        onUpdated={(nextStatus, shippingMethod) => {
                           setOrders((current) =>
-                            current.map((item) =>
-                              (item._id || item.id) === orderId ? { ...item, status: nextStatus } : item,
-                            ),
+                            current.map((item) => {
+                              const currentId = item._id || item.id || ''
+                              if (currentId !== orderId) return item
+                              return {
+                                ...item,
+                                status: nextStatus,
+                                shippingMethod: shippingMethod || item.shippingMethod,
+                              }
+                            }),
                           )
                         }}
                       />
+                    )}
+                    {isAdmin && order.shippingMethod === 'shiprocket' && (
+                      <button
+                        type="button"
+                        className="manage-shipping-button"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          navigate(`/order/${orderId}`)
+                        }}
+                      >
+                        Manage Shipping
+                      </button>
                     )}
                     {!isAdmin && delivered && (
                       <span

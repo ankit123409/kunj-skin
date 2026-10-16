@@ -1,0 +1,69 @@
+
+[
+  {
+    "productId": "6abc060bdf5ce49e998b7b21",
+    "title": "Salikunj Facewash",
+    "steps": [
+      {
+        "desc": "Wet your face with lukewarm water.",
+        "image": "../assets/sectionOne/userguilde/facewash1.png"
+      },
+      {
+        "desc": "Take a small amount of facewash.",
+        "image": "../assets/sectionOne/userguilde/facewash2.png"
+      },
+      {
+        "desc": "Gently massage for 30–60 seconds.",
+        "image": "../assets/sectionOne/userguilde/facewash3.png"
+      },
+      {
+        "desc": "Rinse thoroughly and pat dry.",
+        "image": "../assets/sectionOne/userguilde/facewash4.png"
+      }
+    ]
+  },
+  {
+    "productId": "6abc07ebdf5ce49e998b7b2a",
+    "title": "Vita Kunj Face Serum",
+    "steps": [
+      {
+        "desc": "Cleanse your face with a gentle cleanser and lukewarm water.",
+        "image": "../assets/sectionOne/userguilde/faceserum1.png"
+      },
+      {
+        "desc": "Take 2–3 drops of serum on your palm.",
+        "image": "../assets/sectionOne/userguilde/faceserum2.png"
+      },
+      {
+        "desc": "Gently apply and massage on face and neck until fully absorbed..",
+        "image": "../assets/sectionOne/userguilde/faceserum3.png"
+      },
+      {
+        "desc": "Follow with a moisturizer and use sunscreen during the day.",
+        "image": "../assets/sectionOne/userguilde/faceserum4.png"
+      }
+    ]
+  },
+  {
+    "productId": "6abc072ddf5ce49e998b7b25",
+    "title": "Glow Kunj Face Serum",
+    "steps": [
+      {
+        "desc": "Cleanse your face with a gentle cleanser and lukewarm water.",
+        "image": "../assets/sectionOne/userguilde/faceserum1.png"
+      },
+      {
+        "desc": "Take 2–3 drops of serum on your palm.",
+        "image": "../assets/sectionOne/userguilde/faceserum2.png"
+      },
+      {
+        "desc": "Gently apply and massage on face and neck until fully absorbed..",
+        "image": "../assets/sectionOne/userguilde/faceserum3.png"
+      },
+      {
+        "desc": "Follow with a moisturizer and use sunscreen during the day.",
+        "image": "../assets/sectionOne/userguilde/faceserum4.png"
+      }
+    ]
+  }
+]

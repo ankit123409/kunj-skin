@@ -22,6 +22,39 @@ const normalizeProduct = (product: Record<string, unknown>): Product => {
       (actualMrp > 0 && sellingPrice > 0 ? calculateDiscount(actualMrp, sellingPrice) : 0),
   )
 
+  const normalizeImageList = (value: unknown): string[] => {
+    if (Array.isArray(value)) {
+      return value
+        .flatMap((item) => {
+          if (typeof item === 'string') return [item]
+          if (item && typeof item === 'object' && 'url' in item && typeof (item as { url?: unknown }).url === 'string') {
+            return [(item as { url: string }).url]
+          }
+          return []
+        })
+        .filter(Boolean)
+        .map((item) => String(item).trim())
+        .filter(Boolean)
+    }
+
+    if (typeof value === 'string') {
+      return value
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean)
+    }
+
+    return []
+  }
+
+  const images = [
+    ...normalizeImageList(product.images),
+    ...normalizeImageList(product.image),
+    ...normalizeImageList(product.img),
+  ].filter((url, index, array) => url && array.indexOf(url) === index)
+
+  const mainImage = images[0] || String(product.image || product.img || '') || ''
+
   return {
     ...(product as Product),
     _id: String(product._id || product.id || ''),
@@ -30,6 +63,9 @@ const normalizeProduct = (product: Record<string, unknown>): Product => {
     actualMrp: actualMrp || sellingPrice,
     sellingPrice,
     discount,
+    image: mainImage || undefined,
+    img: mainImage || undefined,
+    images,
   }
 }
 

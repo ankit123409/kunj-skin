@@ -1,6 +1,16 @@
 import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 
+export type ProductOffer = {
+  _id?: string
+  minQuantity: number
+  discountType?: 'percentage' | 'fixed'
+  discountValue: number
+  title?: string
+  isActive?: boolean
+  quantity?: number
+}
+
 export type Product = {
   title: string
   price: number
@@ -15,6 +25,8 @@ export type Product = {
   description?: string
   createdAt?: string
   updatedAt?: string
+  quantityOffersEnabled?: boolean
+  offers?: ProductOffer[]
   _id: string
   id?: string
 }

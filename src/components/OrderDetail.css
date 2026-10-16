@@ -165,15 +165,258 @@
   cursor: pointer;
 }
 
+.shipping-management-panel {
+  margin-top: 28px;
+  border: 1px solid #efdccf;
+  border-radius: 18px;
+  background: #fffaf8;
+  padding: 18px 18px 12px;
+  box-shadow: 0 6px 18px rgba(104, 92, 84, 0.04);
+}
+
+.shipping-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.shipping-panel-kicker {
+  margin: 0 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 11px;
+  font-weight: 700;
+  color: #7a6b64;
+}
+
+.shipping-panel-header h3 {
+  margin: 0;
+  font-size: 1.6rem;
+  color: #171414;
+}
+
+.shipping-status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #e6f6f3;
+  color: #0f7a5e;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.shipping-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px 18px;
+  margin-bottom: 18px;
+}
+
+.shipping-meta-grid div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #fff;
+  border: 1px solid #f0e7e0;
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.shipping-meta-grid span {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7a6b64;
+}
+
+.shipping-meta-grid strong {
+  font-size: 0.96rem;
+  color: #171414;
+  word-break: break-word;
+}
+
+.shipping-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.shipping-actions-row button,
+.secondary-button,
+.primary-button,
+.danger-button {
+  border: 1px solid #d9c7bc;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.secondary-button {
+  background: #fff;
+  color: #1b1b1b;
+}
+
+.primary-button {
+  background: #1c7ed6;
+  color: #fff;
+  border-color: #1c7ed6;
+}
+
+.danger-button {
+  background: #fff4f3;
+  color: #d64242;
+  border-color: #f3cdca;
+}
+
+.shipping-actions-row button:disabled,
+.secondary-button:disabled,
+.primary-button:disabled,
+.danger-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.courier-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 10px 0 18px;
+}
+
+.courier-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  border: 1px solid #ecd7cc;
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+}
+
+.courier-option.selected {
+  border-color: #2f7bf6;
+  background: #f2f8ff;
+}
+
+.courier-option strong,
+.courier-option small {
+  display: block;
+}
+
+.courier-option small {
+  color: #655d5a;
+  margin-top: 4px;
+}
+
+.tracking-history-box {
+  border: 1px solid #efdccf;
+  border-radius: 14px;
+  background: #fff;
+  padding: 14px 14px 10px;
+  margin-top: 10px;
+}
+
+.tracking-history-box h4 {
+  margin: 0 0 12px;
+  color: #171414;
+  font-size: 1rem;
+}
+
+.tracking-entry {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 6px 12px;
+  padding: 9px 0;
+  border-top: 1px solid #f2e5df;
+}
+
+.tracking-entry:first-child {
+  border-top: none;
+}
+
+.tracking-entry span {
+  color: #7a6b64;
+  font-size: 0.8rem;
+}
+
+.tracking-entry strong {
+  color: #171414;
+}
+
+.tracking-entry p {
+  grid-column: 2;
+  margin: 0;
+  color: #534f4d;
+}
+
+.shipping-feedback {
+  margin-top: 12px;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 0.92rem;
+  border: 1px solid transparent;
+}
+
+.shipping-feedback.success {
+  background: #ebfaf3;
+  border-color: #bef0d4;
+  color: #0c7a52;
+}
+
+.shipping-feedback.error {
+  background: #fff2f1;
+  border-color: #f7d0ca;
+  color: #b73b35;
+}
+
 @media (max-width: 860px) {
   .detail-header-row,
-  .order-top-meta {
+  .order-top-meta,
+  .shipping-panel-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .shipping-meta-grid {
+    grid-template-columns: 1fr 1fr;
   }
 
   .order-id-value,
   .order-date-value {
     font-size: 1rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .shipping-meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .shipping-actions-row {
+    flex-direction: column;
+  }
+
+  .shipping-actions-row button {
+    width: 100%;
+  }
+
+  .tracking-entry {
+    grid-template-columns: 1fr;
+  }
+
+  .tracking-entry p {
+    grid-column: auto;
   }
 }

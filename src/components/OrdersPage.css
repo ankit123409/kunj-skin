@@ -392,6 +392,19 @@
   color: #878787;
 }
 
+.manage-shipping-button {
+  margin-top: 10px;
+  align-self: flex-start;
+  border: 1px solid #2d8cff;
+  background: #eaf3ff;
+  color: #1764d9;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 @media (min-width: 768px) {
   .orders-page-container {
     width: min(100% - 24px, 1180px);

@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { API_BASE } from './endpoints'
+import { API_BASE, PRODUCTS, SHIPPING } from './endpoints'
 
 const instance = axios.create({
   baseURL: API_BASE,
@@ -259,6 +259,117 @@ export async function bulkUpdateAdminOrderStatusApi(orderIds: string[], status: 
   return res.data as { success?: boolean; message?: string; data?: unknown }
 }
 
+export type CourierOption = {
+  courierId?: number | string
+  id?: number | string
+  courierName?: string
+  name?: string
+  freightCharge?: number | string
+  charge?: number | string
+  shippingCharge?: number | string
+  deliveryDays?: number | string
+  estimatedDeliveryDays?: number | string
+  estimatedDeliveryDate?: string
+  estimatedDelivery?: string
+  etd?: string
+  trackingUrl?: string
+  codAvailable?: boolean
+}
+
+export async function getShippingOrdersApi(params?: Record<string, string | number | undefined>, token?: string) {
+  const res = await instance.get(SHIPPING.ORDERS, {
+    params,
+    headers: authHeaders(token),
+  })
+  return res.data
+}
+
+export async function getAvailableCouriersApi(orderId: string, token?: string) {
+  const res = await instance.get(SHIPPING.COURIERS(orderId), {
+    headers: authHeaders(token),
+  })
+  return (res.data as { data?: CourierOption[]; couriers?: CourierOption[]; result?: CourierOption[]; availableCouriers?: CourierOption[] } )?.data
+    ?? (res.data as { data?: CourierOption[]; couriers?: CourierOption[]; result?: CourierOption[]; availableCouriers?: CourierOption[] })?.couriers
+    ?? (res.data as { data?: CourierOption[]; couriers?: CourierOption[]; result?: CourierOption[]; availableCouriers?: CourierOption[] })?.result
+    ?? (res.data as { data?: CourierOption[]; couriers?: CourierOption[]; result?: CourierOption[]; availableCouriers?: CourierOption[] })?.availableCouriers
+    ?? []
+}
+
+export async function createShipmentApi(orderId: string, token?: string) {
+  const res = await instance.post(SHIPPING.CREATE(orderId), {}, {
+    headers: authHeaders(token),
+  })
+  return res.data as { success?: boolean; message?: string; data?: unknown }
+}
+
+export async function assignCourierApi(orderId: string, courierId: string | number, token?: string) {
+  const res = await instance.post(SHIPPING.ASSIGN_COURIER(orderId), { courierId }, {
+    headers: authHeaders(token),
+  })
+  return res.data as { success?: boolean; message?: string; data?: unknown }
+}
+
+export async function schedulePickupApi(orderId: string, token?: string) {
+  const res = await instance.post(SHIPPING.SCHEDULE_PICKUP(orderId), {}, {
+    headers: authHeaders(token),
+  })
+  return res.data as { success?: boolean; message?: string; data?: unknown }
+}
+
+export async function generateShippingLabelApi(orderId: string, token?: string) {
+  const res = await instance.post(SHIPPING.GENERATE_LABEL(orderId), {}, {
+    headers: authHeaders(token),
+  })
+  return res.data as { success?: boolean; message?: string; data?: unknown }
+}
+
+export async function cancelShipmentApi(orderId: string, token?: string) {
+  const res = await instance.post(SHIPPING.CANCEL(orderId), {}, {
+    headers: authHeaders(token),
+  })
+  return res.data as { success?: boolean; message?: string; data?: unknown }
+}
+
+export async function getOrderTrackingApi(orderId: string, token?: string) {
+  const res = await instance.get(SHIPPING.TRACK(orderId), {
+    headers: authHeaders(token),
+  })
+  return res.data as { success?: boolean; message?: string; data?: unknown; tracking?: unknown[]; history?: unknown[] }
+}
+
+export type ProductFaq = {
+  _id?: string
+  id?: string
+  question?: string
+  answer?: string
+  faq?: string
+  response?: string
+  productId?: string
+}
+
+export function normalizeFaqList(data: unknown): ProductFaq[] {
+  if (Array.isArray(data)) return data as ProductFaq[]
+
+  if (data && typeof data === 'object') {
+    const obj = data as Record<string, unknown>
+    if (Array.isArray(obj.data)) return obj.data as ProductFaq[]
+    if (Array.isArray(obj.faqs)) return obj.faqs as ProductFaq[]
+    if (Array.isArray(obj.result)) return obj.result as ProductFaq[]
+    if (obj.data && typeof obj.data === 'object') {
+      const inner = obj.data as Record<string, unknown>
+      if (Array.isArray(inner.faqs)) return inner.faqs as ProductFaq[]
+      if (Array.isArray(inner.data)) return inner.data as ProductFaq[]
+    }
+  }
+
+  return []
+}
+
+export async function getProductFaqsApi(productId: string) {
+  const res = await instance.get(PRODUCTS.FAQS(productId))
+  return normalizeFaqList(res.data)
+}
+
 export async function getProducts() {
   const res = await instance.get('/products')
   const data = res.data
@@ -284,27 +395,67 @@ export function calculateDiscount(actualMrp: number, sellingPrice: number) {
 
 export type ProductPayload = {
   image?: string
-  images: string[]
-  video: string
-  title: string
-  size: string
-  actualMrp: number
-  sellingPrice: number
-  discount: number
-  description: string
+  images?: string[]
+  video?: string
+  title?: string
+  size?: string
+  actualMrp?: number
+  sellingPrice?: number
+  discount?: number
+  description?: string
   price?: number
+  offers?: Array<{
+    minQuantity: number
+    discountType: 'percentage' | 'fixed'
+    discountValue: number
+    title: string
+    isActive?: boolean
+  }>
+  quantityOffersEnabled?: boolean
+  activeProduct?: boolean
+  featuredProduct?: boolean
+  allowCashOnDelivery?: boolean
+}
+
+function normalizeProductPayload(payload: ProductPayload): ProductPayload {
+  const image = payload.image?.trim() || ''
+  const images = Array.isArray(payload.images) ? payload.images.filter(Boolean).map((item) => String(item).trim()).filter(Boolean) : []
+  const normalizedImages = Array.from(new Set([...(images.length ? images : image ? [image] : []), ...(image ? [image] : [])]))
+
+  return {
+    ...payload,
+    image: image || normalizedImages[0] || '',
+    images: normalizedImages,
+    price: Number(payload.price ?? payload.sellingPrice ?? payload.actualMrp ?? 0),
+    actualMrp: Number(payload.actualMrp ?? payload.price ?? payload.sellingPrice ?? 0),
+    sellingPrice: Number(payload.sellingPrice ?? payload.price ?? payload.actualMrp ?? 0),
+    discount: Number(payload.discount ?? 0),
+    quantityOffersEnabled: Boolean(payload.quantityOffersEnabled),
+    offers: Array.isArray(payload.offers) ? payload.offers.map((offer) => ({
+      ...offer,
+      minQuantity: Number(offer.minQuantity || 1),
+      discountValue: Number(offer.discountValue || 0),
+      isActive: offer.isActive ?? true,
+    })) : [],
+  }
 }
 
 export async function createProductApi(payload: ProductPayload, token?: string) {
-  const res = await instance.post('/products', payload, {
-    headers: authHeaders(token),
+  const res = await instance.post(PRODUCTS.CREATE, normalizeProductPayload(payload), {
+    headers: {
+      ...authHeaders(token),
+      Accept: 'application/json',
+    },
   })
   return res.data as { success?: boolean; message?: string; data?: unknown }
 }
 
 export async function updateProductApi(id: string, payload: ProductPayload, token?: string) {
-  const res = await instance.put(`/products/${id}`, payload, {
-    headers: authHeaders(token),
+  const res = await instance.put(PRODUCTS.UPDATE(id), normalizeProductPayload(payload), {
+    headers: {
+      ...authHeaders(token),
+      Accept: 'application/json',
+    },
   })
   return res.data as { success?: boolean; message?: string; data?: unknown }
 }
@@ -324,7 +475,10 @@ export type ProductReview = {
   review?: string
   rating?: number
   createdAt?: string
+  title?: string
+  name?: string
   user?: { name?: string }
+  customer?: { name?: string }
 }
 
 export type CreateReviewPayload = {

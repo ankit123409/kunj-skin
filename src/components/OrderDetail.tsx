@@ -3,7 +3,17 @@ import './OrderDetail.css'
 import fallbackImage from '../assets/p1.png'
 import { useAppSelector } from '../hooks'
 import { navigate } from '../router'
-import { getOrderByIdApi } from '../api/api'
+import {
+  assignCourierApi,
+  cancelShipmentApi,
+  createShipmentApi,
+  generateShippingLabelApi,
+  getAvailableCouriersApi,
+  getOrderByIdApi,
+  getOrderTrackingApi,
+  schedulePickupApi,
+  type CourierOption,
+} from '../api/api'
 import ProductReviewSection from './ProductReviewSection'
 import OrderStatusSelect from './OrderStatusSelect'
 import { isAdminRole, statusHint, statusLabel } from '../utils/orderStatus'
@@ -48,6 +58,29 @@ function reviewTargets(items: OrderProduct[]) {
   return targets
 }
 
+type ShippingRecord = {
+  shippingMethod?: string
+  shippingStatus?: string
+  paymentMethod?: string
+  paymentStatus?: string
+  shiprocketOrderId?: string
+  shipmentId?: string
+  courierName?: string
+  awb?: string
+  shippingCharge?: number | string
+  estimatedDelivery?: string
+  pickupStatus?: string
+  trackingUrl?: string
+  labelUrl?: string
+  trackingHistory?: Array<{
+    status?: string
+    date?: string
+    description?: string
+    createdAt?: string
+    timestamp?: string
+  }>
+}
+
 type OrderRecord = {
   id?: string
   _id?: string
@@ -62,6 +95,20 @@ type OrderRecord = {
   couponCode?: string
   couponId?: string
   totalAmount?: number
+  shippingMethod?: string
+  shipping_method?: string
+  shippingStatus?: string
+  shipmentStatus?: string
+  paymentMethod?: string
+  paymentStatus?: string
+  shiprocketOrderId?: string
+  shipmentId?: string
+  courierName?: string
+  awb?: string
+  trackingUrl?: string
+  estimatedDelivery?: string
+  pickupStatus?: string
+  labelUrl?: string
   items: OrderProduct[]
   address?: {
     name?: string
@@ -74,6 +121,29 @@ type OrderRecord = {
   }
 }
 
+function normalizeShippingRecord(order: OrderRecord | null): ShippingRecord {
+  if (!order) return {}
+
+  const shippingMethod = String(order.shippingMethod ?? order.shipping_method ?? '').trim().toLowerCase()
+  const shippingStatus = String(order.shippingStatus ?? order.shipmentStatus ?? '').trim()
+
+  return {
+    shippingMethod: shippingMethod || 'not_selected',
+    shippingStatus: shippingStatus || 'not_created',
+    paymentMethod: String(order.paymentMethod ?? '').trim() || 'unknown',
+    paymentStatus: String(order.paymentStatus ?? '').trim() || 'pending',
+    shiprocketOrderId: String(order.shiprocketOrderId ?? '').trim() || '',
+    shipmentId: String(order.shipmentId ?? '').trim() || '',
+    courierName: String(order.courierName ?? '').trim() || '',
+    awb: String(order.awb ?? '').trim() || '',
+    shippingCharge: order.shippingAmount ?? 0,
+    estimatedDelivery: String(order.estimatedDelivery ?? '').trim() || '',
+    pickupStatus: String(order.pickupStatus ?? '').trim() || 'not_scheduled',
+    trackingUrl: String(order.trackingUrl ?? '').trim() || '',
+    labelUrl: String(order.labelUrl ?? '').trim() || '',
+  }
+}
+
 export default function OrderDetail({ id }: { id: string }) {
   const localOrder = useAppSelector((state) =>
     state.orders.items.find((entry) => entry.id === id || entry._id === id)
@@ -82,47 +152,16 @@ export default function OrderDetail({ id }: { id: string }) {
   const [order, setOrder] = useState<OrderRecord | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [shippingStatus, setShippingStatus] = useState<ShippingRecord>({})
+  const [couriers, setCouriers] = useState<CourierOption[]>([])
+  const [selectedCourierId, setSelectedCourierId] = useState<string>('')
+  const [shippingBusy, setShippingBusy] = useState(false)
+  const [shippingMessage, setShippingMessage] = useState('')
+  const [shippingError, setShippingError] = useState('')
+  const [trackingHistory, setTrackingHistory] = useState<Array<{ status?: string; date?: string; description?: string; createdAt?: string; timestamp?: string }>>([])
 
   useEffect(() => {
     const token = typeof window !== 'undefined' ? window.localStorage.getItem('kunj-skin-token') : null
-
-    // const normalizeOrder = (payload: any): OrderRecord | null => {
-    //   if (!payload) return null
-
-    //   const rawItems = Array.isArray(payload.items) ? payload.items : []
-
-    //   return {
-    //     id: payload._id || payload.id || id,
-    //     status: payload.status || 'Placed',
-    //     createdAt: payload.createdAt || payload.created_at || new Date().toISOString(),
-    //     total: Number(payload.total ?? payload.amount ?? 0),
-    //     items: rawItems.map((item: any, index: number) => {
-    //       const product = item.product || item || {}
-    //       const title = product.title || product.name || item.name || `Product ${index + 1}`
-    //       const price = Number(item.price ?? product.price ?? 0)
-    //       const quantity = Number(item.quantity ?? 1)
-
-    //       return {
-    //         id: item._id || item.id || product._id || `${payload._id || payload.id || id}-${index}`,
-    //         title,
-    //         price,
-    //         quantity,
-    //         image: product.image || item.image || item.img || product.img,
-    //         img: product.img || item.img,
-    //         size: product.size || item.size || '30ml',
-    //       }
-    //     }),
-    //     address: payload.address || {
-    //       name: payload.name,
-    //       mobile: payload.mobile,
-    //       addressLine1: payload.addressLine1,
-    //       addressLine2: payload.addressLine2,
-    //       city: payload.city,
-    //       state: payload.state,
-    //       pincode: payload.pincode,
-    //     },
-    //   }
-    // }
 
     const loadOrder = async () => {
       try {
@@ -130,52 +169,250 @@ export default function OrderDetail({ id }: { id: string }) {
         setError('')
 
         if (token) {
-           const response = await getOrderByIdApi(id, token)
-            console.log("payload111",response);
-            setOrder(response.data as OrderRecord)
-            return
+          const response = await getOrderByIdApi(id, token)
+          const payload = (response && typeof response === 'object' && 'data' in response ? response.data : response) as OrderRecord | null
+          setOrder(payload)
+          setShippingStatus(normalizeShippingRecord(payload))
+          return
         }
-      } catch (err: any) {
-        const message = err?.response?.data?.message || err?.response?.data?.error || 'Unable to load order.'
+      } catch (err: unknown) {
+        const message = err && typeof err === 'object' && 'response' in err
+          ? ((err as { response?: { data?: { message?: string; error?: string } } }).response?.data?.message || (err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Unable to load order.')
+          : 'Unable to load order.'
         setError(message)
       } finally {
         setLoading(false)
       }
-
-      // if (!localOrder) {
-      //   setOrder(null)
-      //   return
-      // }
-
-      // setOrder({
-      //   id: localOrder.id,
-      //   status: localOrder.status,
-      //   createdAt: localOrder.createdAt,
-      //   total: Number(localOrder.total ?? 0),
-      //   items: localOrder.items.map((item) => ({
-      //     id: item.id,
-      //     title: item.title,
-      //     price: Number(item.price ?? 0),
-      //     quantity: Number(item.quantity ?? 1),
-      //     image: item.image || item.img,
-      //     img: item.img,
-      //     size: item.size || '30ml',
-      //   })),
-      //   address: {
-      //     name: '',
-      //     mobile: '',
-      //     addressLine1: '',
-      //     city: '',
-      //     state: '',
-      //     pincode: '',
-      //   },
-      // })
     }
 
-    loadOrder()
-  }, [id, localOrder])
+    void loadOrder()
+  }, [id])
+
+  useEffect(() => {
+    const mergedOrder = order || localOrder || null
+    setShippingStatus(normalizeShippingRecord(mergedOrder))
+  }, [order, localOrder])
 
   const orderData = order || localOrder
+  const orderId = String(orderData?._id || orderData?.id || id)
+  const persistedShippingMethod = (() => {
+    if (typeof window === 'undefined') return ''
+    try {
+      const raw = window.sessionStorage.getItem('kunj-skin-order-shipping-methods')
+      if (!raw) return ''
+      const parsed = JSON.parse(raw) as Record<string, string>
+      return String(parsed[orderId] || '').trim().toLowerCase()
+    } catch {
+      return ''
+    }
+  })()
+
+  const shippingMethod = String(shippingStatus.shippingMethod || orderData?.shippingMethod || orderData?.shipping_method || persistedShippingMethod || '').trim().toLowerCase()
+  const showShippingManagement = isAdmin && (
+    shippingMethod === 'shiprocket' ||
+    shippingMethod === 'own' ||
+    orderData?.status === 'confirmed' ||
+    Boolean(shippingStatus.shipmentId) ||
+    Boolean(orderData?.shipmentId) ||
+    Boolean(shippingStatus.shippingStatus && shippingStatus.shippingStatus !== 'not_created' && shippingStatus.shippingStatus !== 'not_selected') ||
+    Boolean(orderData?.shippingStatus && orderData?.shippingStatus !== 'not_created' && orderData?.shippingStatus !== 'not_selected')
+  )
+  const shipmentCreated = Boolean(
+    shippingStatus.shipmentId || orderData?.shipmentId || (shippingStatus.shippingStatus && shippingStatus.shippingStatus !== 'not_created' && shippingStatus.shippingStatus !== 'not_selected') || (orderData?.shippingStatus && orderData.shippingStatus !== 'not_created' && orderData.shippingStatus !== 'not_selected')
+  )
+
+  const handleCheckCouriers = async () => {
+    const token = typeof window !== 'undefined' ? window.localStorage.getItem('kunj-skin-token') : null
+    if (!token) {
+      setShippingError('Please login again to manage shipping.')
+      return
+    }
+
+    try {
+      setShippingBusy(true)
+      setShippingError('')
+      const result = await getAvailableCouriersApi(orderId, token)
+      const nextCouriers = Array.isArray(result) ? result : []
+      setCouriers(nextCouriers)
+      if (!nextCouriers.length) {
+        setShippingMessage('No couriers are available for this order right now.')
+      } else {
+        setShippingMessage('Available couriers loaded successfully.')
+      }
+    } catch (err: unknown) {
+      const message = err && typeof err === 'object' && 'response' in err
+        ? ((err as { response?: { data?: { message?: string; error?: string } } }).response?.data?.message || (err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Unable to fetch courier list.')
+        : 'Unable to fetch courier list.'
+      setShippingError(message)
+    } finally {
+      setShippingBusy(false)
+    }
+  }
+
+  const handleCreateShipment = async () => {
+    const token = typeof window !== 'undefined' ? window.localStorage.getItem('kunj-skin-token') : null
+    if (!token) {
+      setShippingError('Please login again to create shipment.')
+      return
+    }
+
+    try {
+      setShippingBusy(true)
+      setShippingError('')
+      const response = await createShipmentApi(orderId, token)
+      const payload = response && typeof response === 'object' && 'data' in response ? response.data : response
+      const nextShipmentId = typeof payload === 'object' && payload ? (payload as { shipmentId?: string; id?: string; _id?: string }).shipmentId || (payload as { shipmentId?: string; id?: string; _id?: string }).id || (payload as { shipmentId?: string; id?: string; _id?: string })._id : ''
+      setShippingStatus((current) => ({
+        ...current,
+        shipmentId: nextShipmentId || current.shipmentId || 'created',
+        shippingStatus: 'created',
+      }))
+      setShippingMessage('Shipment created successfully.')
+    } catch (err: unknown) {
+      const message = err && typeof err === 'object' && 'response' in err
+        ? ((err as { response?: { data?: { message?: string; error?: string } } }).response?.data?.message || (err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Unable to create shipment.')
+        : 'Unable to create shipment.'
+      setShippingError(message)
+    } finally {
+      setShippingBusy(false)
+    }
+  }
+
+  const handleAssignCourier = async () => {
+    const token = typeof window !== 'undefined' ? window.localStorage.getItem('kunj-skin-token') : null
+    if (!token) {
+      setShippingError('Please login again to assign courier.')
+      return
+    }
+
+    if (!selectedCourierId) {
+      setShippingError('Select a courier before assigning.')
+      return
+    }
+
+    try {
+      setShippingBusy(true)
+      setShippingError('')
+      const courier = couriers.find((item) => String(item.courierId ?? item.id) === String(selectedCourierId))
+      await assignCourierApi(orderId, selectedCourierId, token)
+      setShippingStatus((current) => ({
+        ...current,
+        courierName: String(courier?.courierName || courier?.name || current.courierName || ''),
+        shippingStatus: 'courier_assigned',
+      }))
+      setShippingMessage('Courier assigned and AWB generated.')
+    } catch (err: unknown) {
+      const message = err && typeof err === 'object' && 'response' in err
+        ? ((err as { response?: { data?: { message?: string; error?: string } } }).response?.data?.message || (err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Unable to assign courier.')
+        : 'Unable to assign courier.'
+      setShippingError(message)
+    } finally {
+      setShippingBusy(false)
+    }
+  }
+
+  const handleSchedulePickup = async () => {
+    const token = typeof window !== 'undefined' ? window.localStorage.getItem('kunj-skin-token') : null
+    if (!token) {
+      setShippingError('Please login again to schedule pickup.')
+      return
+    }
+
+    try {
+      setShippingBusy(true)
+      setShippingError('')
+      await schedulePickupApi(orderId, token)
+      setShippingStatus((current) => ({ ...current, pickupStatus: 'scheduled' }))
+      setShippingMessage('Pickup scheduled successfully.')
+    } catch (err: unknown) {
+      const message = err && typeof err === 'object' && 'response' in err
+        ? ((err as { response?: { data?: { message?: string; error?: string } } }).response?.data?.message || (err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Unable to schedule pickup.')
+        : 'Unable to schedule pickup.'
+      setShippingError(message)
+    } finally {
+      setShippingBusy(false)
+    }
+  }
+
+  const handleGenerateLabel = async () => {
+    const token = typeof window !== 'undefined' ? window.localStorage.getItem('kunj-skin-token') : null
+    if (!token) {
+      setShippingError('Please login again to generate label.')
+      return
+    }
+
+    try {
+      setShippingBusy(true)
+      setShippingError('')
+      await generateShippingLabelApi(orderId, token)
+      setShippingMessage('Shipping label generated successfully.')
+    } catch (err: unknown) {
+      const message = err && typeof err === 'object' && 'response' in err
+        ? ((err as { response?: { data?: { message?: string; error?: string } } }).response?.data?.message || (err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Unable to generate label.')
+        : 'Unable to generate label.'
+      setShippingError(message)
+    } finally {
+      setShippingBusy(false)
+    }
+  }
+
+  const handleTrackShipment = async () => {
+    const token = typeof window !== 'undefined' ? window.localStorage.getItem('kunj-skin-token') : null
+    if (!token) {
+      setShippingError('Please login again to track shipment.')
+      return
+    }
+
+    try {
+      setShippingBusy(true)
+      setShippingError('')
+      const response = await getOrderTrackingApi(orderId, token)
+      const history = Array.isArray((response as { history?: typeof trackingHistory }).history)
+        ? (response as { history?: typeof trackingHistory }).history ?? []
+        : Array.isArray((response as { tracking?: typeof trackingHistory }).tracking)
+          ? (response as { tracking?: typeof trackingHistory }).tracking ?? []
+          : []
+      setTrackingHistory(history)
+      setShippingStatus((current) => ({
+        ...current,
+        trackingUrl: String((response as { trackingUrl?: string })?.trackingUrl ?? current.trackingUrl ?? '').trim() || ''
+      }))
+      setShippingMessage('Tracking information refreshed.')
+    } catch (err: unknown) {
+      const message = err && typeof err === 'object' && 'response' in err
+        ? ((err as { response?: { data?: { message?: string; error?: string } } }).response?.data?.message || (err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Unable to load tracking.')
+        : 'Unable to load tracking.'
+      setShippingError(message)
+    } finally {
+      setShippingBusy(false)
+    }
+  }
+
+  const handleCancelShipment = async () => {
+    const token = typeof window !== 'undefined' ? window.localStorage.getItem('kunj-skin-token') : null
+    if (!token) {
+      setShippingError('Please login again to cancel shipment.')
+      return
+    }
+
+    const confirmCancel = typeof window !== 'undefined' ? window.confirm('Are you sure you want to cancel this shipment?') : true
+    if (!confirmCancel) return
+
+    try {
+      setShippingBusy(true)
+      setShippingError('')
+      await cancelShipmentApi(orderId, token)
+      setShippingStatus((current) => ({ ...current, shippingStatus: 'cancelled' }))
+      setShippingMessage('Shipment cancelled successfully.')
+    } catch (err: unknown) {
+      const message = err && typeof err === 'object' && 'response' in err
+        ? ((err as { response?: { data?: { message?: string; error?: string } } }).response?.data?.message || (err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Unable to cancel shipment.')
+        : 'Unable to cancel shipment.'
+      setShippingError(message)
+    } finally {
+      setShippingBusy(false)
+    }
+  }
 
   if (!orderData && !loading) {
     return (
@@ -194,13 +431,8 @@ export default function OrderDetail({ id }: { id: string }) {
       </main>
     )
   }
-console.log("orderData?.items ",orderData?.items );
 
   const items = orderData?.items ?? []
-  // const subtotal = useMemo(
-  //   () => items.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 1), 0),
-  //   [items]
-  // )
   const itemCount = items.reduce((sum, item) => sum + Number(item.quantity || 1), 0)
   const subtotalValue = Number(orderData?.subtotal ?? items.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 1), 0))
   const discountAmount = Number(orderData?.discountAmount ?? 0)
@@ -232,13 +464,14 @@ console.log("orderData?.items ",orderData?.items );
 
                 {isAdmin && (
                   <OrderStatusSelect
-                    orderId={orderData?._id || orderData?.id || id}
+                    orderId={orderId}
                     status={orderData?.status || 'pending'}
-                    onUpdated={(nextStatus) => {
+                    onUpdated={(nextStatus, nextShippingMethod) => {
                       setOrder((current) => ({
                         ...(current || orderData || { items: [] }),
                         items: current?.items || orderData?.items || [],
                         status: nextStatus,
+                        shippingMethod: nextShippingMethod || current?.shippingMethod || orderData?.shippingMethod || '',
                       }))
                     }}
                   />
@@ -332,6 +565,113 @@ console.log("orderData?.items ",orderData?.items );
                 </div>
               </div>
             </div>
+
+            {showShippingManagement && (
+              <section className="shipping-management-panel">
+                <div className="shipping-panel-header">
+                  <div>
+                    <p className="shipping-panel-kicker">Shipment</p>
+                    <h3>{shippingMethod === 'shiprocket' ? 'Shiprocket Order' : 'Shipping Management'}</h3>
+                  </div>
+                  <span className="shipping-status-pill">{shippingStatus.shippingStatus || 'pending'}</span>
+                </div>
+
+                <div className="shipping-meta-grid">
+                  <div><span>Order ID</span><strong>{orderId}</strong></div>
+                  <div><span>Shipping Method</span><strong>{shippingStatus.shippingMethod || 'Shiprocket'}</strong></div>
+                  <div><span>Payment Method</span><strong>{shippingStatus.paymentMethod || 'Unknown'}</strong></div>
+                  <div><span>Payment Status</span><strong>{shippingStatus.paymentStatus || 'Pending'}</strong></div>
+                  <div><span>Shipment Status</span><strong>{shippingStatus.shippingStatus || 'Not created'}</strong></div>
+                  <div><span>Shipment ID</span><strong>{shippingStatus.shipmentId || '—'}</strong></div>
+                  <div><span>Courier Name</span><strong>{shippingStatus.courierName || '—'}</strong></div>
+                  <div><span>AWB</span><strong>{shippingStatus.awb || '—'}</strong></div>
+                  <div><span>Shipping Charge</span><strong>{shippingStatus.shippingCharge ? `₹${shippingStatus.shippingCharge}` : '—'}</strong></div>
+                  <div><span>Estimated Delivery</span><strong>{shippingStatus.estimatedDelivery || '—'}</strong></div>
+                  <div><span>Pickup Status</span><strong>{shippingStatus.pickupStatus || 'Not scheduled'}</strong></div>
+                  <div><span>Tracking URL</span><strong>{shippingStatus.trackingUrl ? 'Available' : '—'}</strong></div>
+                </div>
+
+                {!shipmentCreated ? (
+                  <div className="shipping-actions-row">
+                    <button type="button" className="secondary-button" onClick={() => void handleCheckCouriers()} disabled={shippingBusy}>
+                      {shippingBusy ? 'Loading...' : 'Check Available Couriers'}
+                    </button>
+                    <button type="button" className="primary-button" onClick={() => void handleCreateShipment()} disabled={shippingBusy}>
+                      {shippingBusy ? 'Creating...' : 'Create Shipment'}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="shipping-actions-row">
+                    <button type="button" className="secondary-button" onClick={() => void handleCheckCouriers()} disabled={shippingBusy}>
+                      Check Available Couriers
+                    </button>
+                    <button type="button" className="primary-button" onClick={() => void handleAssignCourier()} disabled={shippingBusy || !selectedCourierId}>
+                      Assign Courier / Generate AWB
+                    </button>
+                    <button type="button" className="secondary-button" onClick={() => void handleSchedulePickup()} disabled={shippingBusy}>
+                      Schedule Pickup
+                    </button>
+                    <button type="button" className="secondary-button" onClick={() => void handleGenerateLabel()} disabled={shippingBusy}>
+                      Generate Label
+                    </button>
+                    <button type="button" className="secondary-button" onClick={() => void handleTrackShipment()} disabled={shippingBusy}>
+                      Track Shipment
+                    </button>
+                    <button type="button" className="danger-button" onClick={() => void handleCancelShipment()} disabled={shippingBusy}>
+                      Cancel Shipment
+                    </button>
+                  </div>
+                )}
+
+                {couriers.length > 0 && (
+                  <div className="courier-list">
+                    {couriers.map((courier) => {
+                      const courierId = String(courier.courierId ?? courier.id ?? '')
+                      const selected = selectedCourierId === courierId
+                      const courierCharge = courier.freightCharge ?? courier.charge ?? courier.shippingCharge ?? 0
+                      const courierDelivery = courier.estimatedDeliveryDate || courier.estimatedDelivery || courier.deliveryDays || courier.estimatedDeliveryDays || courier.etd || 'Delivery estimate available'
+                      const courierName = courier.courierName || courier.name || 'Courier'
+
+                      return (
+                        <button
+                          type="button"
+                          key={courierId || `${courierName}-${courierCharge}`}
+                          className={`courier-option ${selected ? 'selected' : ''}`}
+                          onClick={() => setSelectedCourierId(courierId)}
+                        >
+                          <div>
+                            <strong>{courierName}</strong>
+                            <small>
+                              {courier.codAvailable === false ? 'COD unavailable' : `Charge: ₹${Number(courierCharge || 0)}`} 
+                            </small>
+                          </div>
+                          <span>{courierDelivery}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+
+                {trackingHistory.length > 0 && (
+                  <div className="tracking-history-box">
+                    <h4>Tracking History</h4>
+                    {trackingHistory.map((entry, index) => (
+                      <div key={`${entry.status || 'status'}-${index}`} className="tracking-entry">
+                        <span>{entry.date || entry.createdAt || entry.timestamp || 'Recent'}</span>
+                        <strong>{entry.status || 'Updated'}</strong>
+                        <p>{entry.description || 'Shipment status updated.'}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {(shippingMessage || shippingError) && (
+                  <div className={`shipping-feedback ${shippingError ? 'error' : 'success'}`}>
+                    {shippingError || shippingMessage}
+                  </div>
+                )}
+              </section>
+            )}
 
             {reviewTargets(items).map((target) => (
               <ProductReviewSection

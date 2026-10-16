@@ -1,5 +1,5 @@
-// export const API_BASE = 'http://localhost:8001/api'
-export const API_BASE = 'https://kunj-skin-backend.vercel.app/api'
+// export const API_BASE = 'https://kunj-skin-backend.vercel.app/api'
+export const API_BASE = 'http://localhost:8001/api'
 
 export const AUTH = {
   REGISTER: `${API_BASE}/auth/register`,
@@ -10,6 +10,7 @@ export const PRODUCTS = {
   CREATE: `${API_BASE}/products`,
   UPDATE: (id: string) => `${API_BASE}/products/${id}`,
   DELETE: (id: string) => `${API_BASE}/products/${id}`,
+  FAQS: (productId: string) => `${API_BASE}/products/${productId}/faqs`,
 }
 export const ORDERS = {
   MY: `${API_BASE}/orders/my`,
@@ -20,6 +21,16 @@ export const ORDERS = {
 }
 export const PAYMENTS = {
   VERIFY: `${API_BASE}/payment/verify`,
+}
+export const SHIPPING = {
+  ORDERS: `${API_BASE}/admin/shipping/orders`,
+  COURIERS: (orderId: string) => `${API_BASE}/admin/shipping/couriers/${orderId}`,
+  CREATE: (orderId: string) => `${API_BASE}/admin/shipping/create/${orderId}`,
+  ASSIGN_COURIER: (orderId: string) => `${API_BASE}/admin/shipping/assign-courier/${orderId}`,
+  SCHEDULE_PICKUP: (orderId: string) => `${API_BASE}/admin/shipping/schedule-pickup/${orderId}`,
+  GENERATE_LABEL: (orderId: string) => `${API_BASE}/admin/shipping/generate-label/${orderId}`,
+  CANCEL: (orderId: string) => `${API_BASE}/admin/shipping/cancel/${orderId}`,
+  TRACK: (orderId: string) => `${API_BASE}/orders/${orderId}/tracking`,
 }
 export const ADDRESSES = {
   LIST: `${API_BASE}/addresses`,
