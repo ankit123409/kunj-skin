@@ -276,6 +276,22 @@ export default function AdminProductsPage() {
     })
   }
 
+  const handleDiscountChange = (value: string) => {
+    const numericValue = Number(value || 0)
+    const cappedValue = Math.min(100, Math.max(0, numericValue))
+
+    setForm((current) => {
+      const nextActualMrp = Number(current.actualMrp || 0)
+      const nextSellingPrice = nextActualMrp > 0 ? Number((nextActualMrp * (1 - cappedValue / 100)).toFixed(2)) : Number(current.sellingPrice || 0)
+
+      return {
+        ...current,
+        discount: cappedValue,
+        sellingPrice: nextSellingPrice,
+      }
+    })
+  }
+
   const handleSave = async () => {
     if (!form.title?.trim() || !form.size?.trim() || !form.description?.trim() || !form.sellingPrice) {
       setError('Fill in title, size, selling price and description')
@@ -592,7 +608,7 @@ export default function AdminProductsPage() {
                         max="100"
                         value={form.discount || ''}
                         placeholder="20"
-                        readOnly
+                        onChange={(e) => handleDiscountChange(e.target.value)}
                       />
                     </div>
                   </div>

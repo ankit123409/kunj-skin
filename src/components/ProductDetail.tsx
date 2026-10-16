@@ -3,6 +3,17 @@ import { useEffect, useMemo, useState } from 'react'
 import sectionOneDataList from '../data/sectionone.json'
 import userGuideList from '../data/userguilde.json'
 import fallbackImage from '../assets/p1.png'
+import facewash1 from '../assets/sectionOne/userguilde/facewash1.png'
+import facewash2 from '../assets/sectionOne/userguilde/facewash2.png'
+import facewash3 from '../assets/sectionOne/userguilde/facewash3.png'
+import facewash4 from '../assets/sectionOne/userguilde/facewash4.png'
+import faceserum1 from '../assets/sectionOne/userguilde/faceserum1.png'
+import faceserum2 from '../assets/sectionOne/userguilde/faceserum2.png'
+import faceserum3 from '../assets/sectionOne/userguilde/faceserum3.png'
+import faceserum4 from '../assets/sectionOne/userguilde/faceserum4.png'
+import salikunjBanner from '../assets/sectionOne/userguilde/salikunj.png'
+import glowkunjBanner from '../assets/sectionOne/userguilde/glowkunj.png'
+import vitakunjBanner from '../assets/sectionOne/userguilde/vitakunj.png'
 import type { Product } from '../store/cartSlice'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { addToCart, decrement } from '../store/cartSlice'
@@ -199,7 +210,7 @@ function ProductGallery({ product, galleryImages, activeImageIndex, setActiveIma
           <span className="trust-icon">✓</span>
           <div>
             <strong>Authentic</strong>
-            <small>Dermatologist tested</small>
+            <small>Dermatologist tested </small>
           </div>
         </div>
       </div>
@@ -431,12 +442,40 @@ export default function ProductDetail({ id }: { id: string }) {
     userGuideList.find((item) => item.productId === String(product._id || product.id || '').trim()) ??
     userGuideList[0]
 
-  const usageSteps = (activeUserGuide?.steps || []).map((step, index) => ({
-    title: `Step ${index + 1}`,
-    description: step.desc,
-    image: new URL(step.image.replace('₹', ''), import.meta.url).href,
-    sequence: index + 1,
-  }))
+  const guideImageMap: Record<string, string> = {
+    'facewash1.png': facewash1,
+    'facewash2.png': facewash2,
+    'facewash3.png': facewash3,
+    'facewash4.png': facewash4,
+    'faceserum1.png': faceserum1,
+    'faceserum2.png': faceserum2,
+    'faceserum3.png': faceserum3,
+    'faceserum4.png': faceserum4,
+  }
+
+  const usageSteps = (activeUserGuide?.steps || []).map((step, index) => {
+    const imagePath = String(step.image || '').replace('₹', '').trim()
+    const fileName = imagePath.split('/').pop() || imagePath
+
+    return {
+      title: `Step ${index + 1}`,
+      description: step.desc,
+      image: guideImageMap[fileName] || imagePath || fallbackImage,
+      sequence: index + 1,
+    }
+  })
+
+  const bannerImageMap: Record<string, string> = {
+    'salikunj.png': salikunjBanner,
+    'glowkunj.png': glowkunjBanner,
+    'vitakunj.png': vitakunjBanner,
+  }
+
+  const productBannerImage = (() => {
+    const bannerPath = String(activeSectionOneData?.banner?.image || '').replace('₹', '').trim()
+    const fileName = bannerPath.split('/').pop() || bannerPath
+    return bannerImageMap[fileName] || bannerPath || fallbackImage
+  })()
 
   const handleAddToCart = () => {
     const item = {
@@ -628,7 +667,7 @@ export default function ProductDetail({ id }: { id: string }) {
         <section className="trust-badges-grid" aria-label="Quality trust badges">
           <div className="trust-feature"><span>✓</span><div><strong>Paraben Free</strong><small>Gentle on your skin</small></div></div>
           <div className="trust-feature"><span>✓</span><div><strong>Non-Comedogenic</strong><small>Won’t clog pores</small></div></div>
-          <div className="trust-feature"><span>✓</span><div><strong>Dermatologically Tested</strong><small>Formulated for daily use</small></div></div>
+          <div className="trust-feature"><span>✓</span><div><strong>Dermatologist recommended</strong><small>Formulated for daily use</small></div></div>
           <div className="trust-feature"><span>✓</span><div><strong>CrueIty Free</strong><small>Kind to skin and values</small></div></div>
         </section>
 
@@ -653,7 +692,7 @@ export default function ProductDetail({ id }: { id: string }) {
               <div className="ingredient-item banner-image-card">
                 <div className="banner-visual">
                   <img
-                    src={new URL(activeSectionOneData.banner.image, import.meta.url).href}
+                    src={productBannerImage}
                     alt={activeSectionOneData.banner.alt || 'Product banner'}
                     loading="lazy"
                   />
